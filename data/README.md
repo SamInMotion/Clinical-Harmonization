@@ -8,7 +8,15 @@
 
 data/
 ├── raw/
-│ └── CDR_Data/ # BC5CDR corpus (CDR_TrainingSet, CDR_DevelopmentSet, CDR_TestSet)
+│ └── bc5cdr/
+│ └── CDR_Data/
+│ └── CDR.Corpus.v010516/
+│ ├── CDR_TrainingSet.BioC.xml # 500 abstracts
+│ ├── CDR_DevelopmentSet.BioC.xml # 500 abstracts
+│ ├── CDR_TestSet.BioC.xml # 500 abstracts
+│ ├── CDR_TrainingSet.PubTator.txt # Alternative format
+│ ├── CDR_DevelopmentSet.PubTator.txt
+│ └── CDR_TestSet.PubTator.txt
 ├── processed/
 │ └── [processed datasets]
 ├── terminology/
@@ -18,51 +26,76 @@ data/
 │ └── loinc/ # LOINC laboratory codes
 └── synthetic_fhir/ # Synthetic FHIR resources
 
-text
-
-
 ---
 
-## BC5CDR Download
+## BC5CDR Corpus
 
 **Source:** Hugging Face (`bigbio/bc5cdr`)  
 **License:** CC-BY 3.0  
 **Citation:** Li et al. (2016), DOI: 10.1093/database/baw068
 
-### Current location
+### Format
 
-data/raw/CDR_Data/
-├── CDR_TrainingSet/ # 500 PubMed abstracts (BioC XML format)
-├── CDR_DevelopmentSet/ # 500 PubMed abstracts (BioC XML format)
-├── CDR_TestSet/ # 500 PubMed abstracts (BioC XML format)
-└── [other files]
+BioC XML format with:
+- `<document>`: One PubMed abstract
+- `<passage>`: Title or abstract text
+- `<annotation>`: Entity mention with:
+  - `type`: Chemical or Disease
+  - `MESH`: MeSH identifier
+  - `location offset` and `length`: Span in text
+  - `text`: Entity mention
 
-Total: 1,500 abstracts with chemical and disease annotations.
+### Statistics
+
+| Split | Abstracts | Chemicals | Diseases | Relations |
+|-------|-----------|-----------|----------|-----------|
+| Training | 500 | ~1,470 | ~1,940 | ~1,040 |
+| Development | 500 | ~1,470 | ~1,940 | ~1,040 |
+| Test | 500 | ~1,469 | ~1,938 | ~1,036 |
+| **Total** | **1,500** | **4,409** | **5,818** | **3,116** |
 
 ---
 
-## Verify download
+## Loading BC5CDR
+
+### Using bioc library (recommended)
 
 ```python
-import os
+from bioc import biocxml
 
-# Count files
-bc5cdr_dir = "data/raw/CDR_Data"
-train_files = len([f for f in os.listdir(os.path.join(bc5cdr_dir, "CDR_TrainingSet")) if f.endswith(".BioC.XML")])
-dev_files = len([f for f in os.listdir(os.path.join(bc5cdr_dir, "CDR_DevelopmentSet")) if f.endswith(".BioC.XML")])
-test_files = len([f for f in os.listdir(os.path.join(bc5cdr_dir, "CDR_TestSet")) if f.endswith(".BioC.XML")])
+# Load training set
+with open("data/raw/bc5cdr/CDR_Data/CDR.Corpus.v010516/CDR_TrainingSet.BioC.xml") as f:
+    collection = biocxml.load(f)
 
-print(f"Training: {train_files} files")
-print(f"Development: {dev_files} files")
-print(f"Test: {test_files} files")
-print(f"Total: {train_files + dev_files + test_files} files (expected: 1500)")
+# Iterate over documents
+for doc in collection:
+    print(f"Document ID: {doc.id}")
+    for passage in doc.passages:
+        print(f"  Passage type: {passage.infons['type']}")
+        print(f"  Text: {passage.text[:100]}...")
+        for ann in passage.annotations:
+            print(f"    Entity: {ann.text} ({ann.infons['type']}) - MESH: {ann.infons.get('MESH', 'N/A')}")
 ```
 
-Expected output:
-- Training: 500 files
-- Development: 500 files
-- Test: 500 files
-- Total: 1500 files
+### Manual XML parsing
+
+```python
+import xml.etree.ElementTree as ET
+
+tree = ET.parse("data/raw/bc5cdr/CDR_Data/CDR.Corpus.v010516/CDR_TrainingSet.BioC.xml")
+root = tree.getroot()
+
+for doc in root.findall('document'):
+    doc_id = doc.find('id').text
+    for passage in doc.findall('passage'):
+        passage_type = passage.find('infon').text
+        passage_text = passage.find('text').text
+        for ann in passage.findall('annotation'):
+            entity_type = ann.find('infon').text
+            mesh_id = ann.find('infon[@key="MESH"]').text
+            entity_text = ann.find('text').text
+            print(f"{doc_id}: {entity_text} ({entity_type}) - MESH: {mesh_id}")
+```
 
 ---
 
