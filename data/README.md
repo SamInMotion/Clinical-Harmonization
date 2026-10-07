@@ -8,7 +8,7 @@
 
 data/
 ├── raw/
-│ └── bc5cdr/ # BC5CDR corpus (downloaded, not committed if restricted)
+│ └── CDR_Data/ # BC5CDR corpus (CDR_TrainingSet, CDR_DevelopmentSet, CDR_TestSet)
 ├── processed/
 │ └── [processed datasets]
 ├── terminology/
@@ -18,6 +18,9 @@ data/
 │ └── loinc/ # LOINC laboratory codes
 └── synthetic_fhir/ # Synthetic FHIR resources
 
+text
+
+
 ---
 
 ## BC5CDR Download
@@ -26,36 +29,25 @@ data/
 **License:** CC-BY 3.0  
 **Citation:** Li et al. (2016), DOI: 10.1093/database/baw068
 
-### Download via Hugging Face datasets library
+### Current location
 
-```bash
-pip install datasets bioc
+data/raw/CDR_Data/
+├── CDR_TrainingSet/ # 500 PubMed abstracts (BioC XML format)
+├── CDR_DevelopmentSet/ # 500 PubMed abstracts (BioC XML format)
+├── CDR_TestSet/ # 500 PubMed abstracts (BioC XML format)
+└── [other files]
 
-# Python script
-from datasets import load_dataset
-dataset = load_dataset("bigbio/bc5cdr")
-```
+Total: 1,500 abstracts with chemical and disease annotations.
 
-### Direct download
+---
 
-**URL:** `https://huggingface.co/datasets/bigbio/bc5cdr/resolve/main/CDR_Data.zip`
-
-```bash
-# Download and extract
-cd data/raw
-wget [https://huggingface.co/datasets/bigbio/bc5cdr/resolve/main/CDR_Data.zip](https://huggingface.co/datasets/bigbio/bc5cdr/resolve/main/CDR_Data.zip)
-unzip CDR_Data.zip
-mv CDR_Data bc5cdr
-```
-
-### Verify download
+## Verify download
 
 ```python
 import os
-from bioc import biocxml
 
 # Count files
-bc5cdr_dir = "data/raw/bc5cdr"
+bc5cdr_dir = "data/raw/CDR_Data"
 train_files = len([f for f in os.listdir(os.path.join(bc5cdr_dir, "CDR_TrainingSet")) if f.endswith(".BioC.XML")])
 dev_files = len([f for f in os.listdir(os.path.join(bc5cdr_dir, "CDR_DevelopmentSet")) if f.endswith(".BioC.XML")])
 test_files = len([f for f in os.listdir(os.path.join(bc5cdr_dir, "CDR_TestSet")) if f.endswith(".BioC.XML")])
