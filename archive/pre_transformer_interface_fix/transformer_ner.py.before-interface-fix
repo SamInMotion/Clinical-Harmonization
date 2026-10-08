@@ -1,0 +1,401 @@
+"""
+Transformer NER fine-tuning for BC5CDR.
+Fine-tunes PubMedBERT for token classification (NER).
+"""
+
+import torch
+import json
+import re
+from typing import List, Dict, Tuple, Optional
+from pathlib import Path
+from dataclasses import dataclass
+from collections import defaultdict
+
+from transformers import (
+    AutoTokenizer,
+    AutoModelForTokenClassification,
+    TrainingArguments,
+    Trainer,
+    DataCollatorForTokenClassification,
+)
+from datasets import Dataset
+from seqeval.metrics import classification_report
+
+# Import local modules
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from ner.load_bc5cdr import load_bc5cdr
+
+
+# Label mapping for BC5CDR (BIO scheme)
+LABEL_LIST = ["O", "B-Chemical", "I-Chemical", "B-Disease", "I-Disease"]
+LABEL2ID = {label: i for i, label in enumerate(LABEL_LIST)}
+ID2LABEL = {i: label for i, label in enumerate(LABEL_LIST)}
+NUM_LABELS = len(LABEL_LIST)
+
+
+@dataclass
+class TokenizedExample:
+    input_ids: List[int]
+    attention_mask: List[int]
+    labels: List[int]
+    offset_mapping: List[Tuple[int, int]]
+
+
+def build_char_labels(text: str, entities: List[Dict]) -> List[str]:
+    """Build character-level BIO labels."""
+    char_labels = ["O"] * len(text)
+    
+    for entity in entities:
+        start = entity["offset"]
+        end = entity["offset"] + entity["length"]
+        entity_type = entity["type"]
+        
+        if entity_type == "Chemical":
+            bio_prefix = "Chemical"
+        elif entity_type == "Disease":
+            bio_prefix = "Disease"
+        else:
+            continue
+        
+        if start < len(char_labels):
+            char_labels[start] = f"B-{bio_prefix}"
+        for i in range(start + 1, min(end, len(text))):
+            if i < len(char_labels):
+                char_labels[i] = f"I-{bio_prefix}"
+    
+    return char_labels
+
+
+def tokenize_and_align(
+    texts: List[str],
+    all_entities: List[List[Dict]],
+    tokenizer: AutoTokenizer,
+    max_length: int = 512,
+) -> List[TokenizedExample]:
+    """Tokenize texts and align BIO labels with subword tokens."""
+    examples = []
+    
+    for text, entities in zip(texts, all_entities):
+        char_labels = build_char_labels(text, entities)
+        
+        tokenized = tokenizer(
+            text,
+            truncation=True,
+            max_length=max_length,
+            return_offsets_mapping=True,
+            padding=False,
+        )
+        
+        input_ids = tokenized["input_ids"]
+        offset_mapping = tokenized["offset_mapping"]
+        attention_mask = tokenized["attention_mask"]
+        
+        labels = []
+        for i, (start, end) in enumerate(offset_mapping):
+            if start == end:
+                labels.append(-100)
+            else:
+                if start < len(char_labels):
+                    label_str = char_labels[start]
+                else:
+                    label_str = "O"
+                label_id = LABEL2ID.get(label_str, LABEL2ID["O"])
+                labels.append(label_id)
+        
+        examples.append(TokenizedExample(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            labels=labels,
+            offset_mapping=offset_mapping,
+        ))
+    
+    return examples
+
+
+def prepare_dataset(docs, tokenizer: AutoTokenizer, max_length: int = 512) -> Dataset:
+    """Prepare dataset for training."""
+    texts = [doc.abstract for doc in docs]
+    all_entities = [doc.all_entities for doc in docs]
+    doc_ids = [doc.doc_id for doc in docs]
+    
+    examples = tokenize_and_align(texts, all_entities, tokenizer, max_length)
+    
+    data_dict = {
+        "input_ids": [ex.input_ids for ex in examples],
+        "attention_mask": [ex.attention_mask for ex in examples],
+        "labels": [ex.labels for ex in examples],
+        "doc_id": doc_ids,
+        "offset_mapping": [ex.offset_mapping for ex in examples],
+    }
+    
+    return Dataset.from_dict(data_dict)
+
+
+def compute_metrics(eval_pred):
+    """Compute NER metrics using seqeval."""
+    predictions, labels = eval_pred
+    preds = torch.argmax(torch.tensor(predictions), dim=-1).numpy()
+    
+    true_labels = []
+    pred_labels = []
+    
+    for i in range(len(labels)):
+        true_label_ids = labels[i]
+        pred_label_ids = preds[i]
+        
+        true_labels_i = [
+            LABEL_LIST[lid] if lid != -100 else "O"
+            for lid in true_label_ids
+        ]
+        pred_labels_i = [
+            LABEL_LIST[pred_id] if pred_id != -100 else "O"
+            for pred_id in pred_label_ids
+        ]
+        
+        min_len = min(len(true_labels_i), len(pred_labels_i))
+        true_labels.append(true_labels_i[:min_len])
+        pred_labels.append(pred_labels_i[:min_len])
+    
+    # Use seqeval classification_report with output_dict=True
+    report = classification_report(true_labels, pred_labels, output_dict=True)
+    
+    return {
+        "overall_f1": report.get("overall_f1", 0.0),
+        "overall_precision": report.get("overall_precision", 0.0),
+        "overall_recall": report.get("overall_recall", 0.0),
+        "chemical_f1": report.get("Chemical", {}).get("f1", 0.0),
+        "disease_f1": report.get("Disease", {}).get("f1", 0.0),
+    }
+
+
+def train_ner(
+    train_docs,
+    eval_docs,
+    model_name: str = "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract",
+    output_dir: str = "./ner_model",
+    num_epochs: int = 10,
+    batch_size: int = 16,
+    learning_rate: float = 2e-5,
+    max_length: int = 512,
+):
+    """Fine-tune transformer for NER."""
+    print(f"Loading tokenizer: {model_name}")
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    
+    print(f"\nPreparing training dataset ({len(train_docs)} docs)...")
+    train_dataset = prepare_dataset(train_docs, tokenizer, max_length)
+    
+    print(f"Preparing evaluation dataset ({len(eval_docs)} docs)...")
+    eval_dataset = prepare_dataset(eval_docs, tokenizer, max_length)
+    
+    print(f"\nLoading model: {model_name}")
+    model = AutoModelForTokenClassification.from_pretrained(
+        model_name,
+        num_labels=NUM_LABELS,
+        id2label=ID2LABEL,
+        label2id=LABEL2ID,
+    )
+    
+    data_collator = DataCollatorForTokenClassification(tokenizer)
+    
+    training_args = TrainingArguments(
+        output_dir=output_dir,
+        num_train_epochs=num_epochs,
+        per_device_train_batch_size=batch_size,
+        per_device_eval_batch_size=batch_size * 2,
+        learning_rate=learning_rate,
+        weight_decay=0.01,
+        warmup_ratio=0.1,
+        evaluation_strategy="epoch",
+        save_strategy="epoch",
+        logging_strategy="steps",
+        logging_steps=50,
+        load_best_model_at_end=True,
+        metric_for_best_model="overall_f1",
+        greater_is_better=True,
+        report_to="none",
+    )
+    
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        data_collator=data_collator,
+        tokenizer=tokenizer,
+        compute_metrics=compute_metrics,
+    )
+    
+    print("\nStarting training...")
+    trainer.train()
+    
+    print(f"\nSaving model to {output_dir}")
+    trainer.save_model(output_dir)
+    tokenizer.save_pretrained(output_dir)
+    
+    return model, tokenizer
+
+
+def predict_ner(model, tokenizer, docs, batch_size: int = 16, max_length: int = 512):
+    """Predict entities for documents using trained model."""
+    # from ner.evaluate_ner import Span  # NOT AVAILABLE
+    
+    dataset = prepare_dataset(docs, tokenizer, max_length)
+    
+    model.eval()
+    all_pred_ids = []
+    
+    with torch.no_grad():
+        for i in range(0, len(dataset), batch_size):
+            batch_input_ids = torch.tensor(dataset["input_ids"][i:i+batch_size])
+            batch_attention_mask = torch.tensor(dataset["attention_mask"][i:i+batch_size])
+            
+            outputs = model(
+                input_ids=batch_input_ids,
+                attention_mask=batch_attention_mask,
+            ).logits
+            
+            pred_ids = torch.argmax(outputs, dim=-1).numpy()
+            all_pred_ids.extend(pred_ids)
+    
+    all_spans = []
+    
+    for i, doc in enumerate(docs):
+        pred_label_ids = all_pred_ids[i]
+        offset_mapping = dataset["offset_mapping"][i]
+        
+        current_span = None
+        
+        for j, label_id in enumerate(pred_label_ids):
+            if label_id == -100:
+                continue
+            
+            label_str = LABEL_LIST[label_id]
+            
+            if label_str.startswith("B-"):
+                if current_span is not None:
+                    all_spans.append(current_span)
+                
+                entity_type = label_str[2:]
+                start, end = offset_mapping[j]
+                text = doc.abstract[start:end]
+                
+                current_span = Span(
+                    text=text,
+                    start=start,
+                    end=end,
+                    entity_type=entity_type,
+                    doc_id=doc.doc_id,
+                )
+            
+            elif label_str.startswith("I-") and current_span is not None:
+                entity_type = label_str[2:]
+                _, end = offset_mapping[j]
+                current_span.end = end
+                current_span.text = doc.abstract[current_span.start:end]
+        
+        if current_span is not None:
+            all_spans.append(current_span)
+    
+    return all_spans
+
+
+if __name__ == "__main__":
+    # from ner.evaluate_ner import gold_to_spans, evaluate_ner, print_results  # NOT AVAILABLE
+    
+    print("="*60)
+    print("TRANSFORMER NER TRAINING")
+    print("="*60)
+    
+    data_dir = Path("data/raw/bc5cdr")
+    print(f"\nLoading BC5CDR data...")
+    train_docs = load_bc5cdr(str(data_dir / "CDR_Data/CDR.Corpus.v010516/CDR_TrainingSet.BioC.xml"))
+    test_docs = load_bc5cdr(str(data_dir / "CDR_Data/CDR.Corpus.v010516/CDR_TestSet.BioC.xml"))
+    
+    print(f"\nTraining on: {len(train_docs)} docs")
+    print(f"Testing on: {len(test_docs)} docs")
+    
+    model, tokenizer = train_ner(
+        train_docs,
+        test_docs,
+        model_name="microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract",
+        output_dir="./ner_model",
+        num_epochs=10,
+        batch_size=16,
+    )
+    
+    print("\n" + "="*60)
+    print("EVALUATION ON TEST SET")
+    print("="*60)
+    
+    pred_spans = predict_ner(model, tokenizer, test_docs)
+    gold_spans = gold_to_spans(test_docs)
+    
+    results = evaluate_ner(gold_spans, pred_spans)
+    by_type = evaluate_by_type(gold_spans, pred_spans)
+    print_results(results, by_type)
+
+# === MISSING CLASSES/FUNCTIONS (inline since not in evaluate_ner.py) ===
+from dataclasses import dataclass
+
+@dataclass
+class Span:
+    text: str
+    start: int
+    end: int
+    entity_type: str
+    doc_id: str = ""
+
+def gold_to_spans(docs):
+    """Convert documents to list of gold spans."""
+    spans = []
+    for doc in docs:
+        for entity in doc.all_entities:
+            spans.append(Span(
+                text=entity["text"],
+                start=entity["offset"],
+                end=entity["offset"] + entity["length"],
+                entity_type=entity["type"],
+                doc_id=doc.doc_id
+            ))
+    return spans
+
+def evaluate_ner(gold_spans, pred_spans):
+    """Simple entity-level evaluation."""
+    gold_set = set((s.doc_id, s.start, s.end, s.entity_type) for s in gold_spans)
+    pred_set = set((s.doc_id, s.start, s.end, s.entity_type) for s in pred_spans)
+    
+    tp = len(gold_set & pred_set)
+    fp = len(pred_set - gold_set)
+    fn = len(gold_set - pred_set)
+    
+    p = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    r = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1 = 2 * p * r / (p + r) if (p + r) > 0 else 0.0
+    
+    return {"precision": p, "recall": r, "f1": f1, "true_positives": tp, "false_positives": fp, "false_negatives": fn}
+
+def evaluate_by_type(gold_spans, pred_spans):
+    """Evaluate by entity type."""
+    from collections import defaultdict
+    gold_by_type = defaultdict(list)
+    pred_by_type = defaultdict(list)
+    
+    for s in gold_spans:
+        gold_by_type[s.entity_type].append(s)
+    for s in pred_spans:
+        pred_by_type[s.entity_type].append(s)
+    
+    results = {}
+    for et in set(gold_by_type.keys()) | set(pred_by_type.keys()):
+        results[et] = evaluate_ner(gold_by_type.get(et, []), pred_by_type.get(et, []))
+    return results
+
+def print_results(results, by_type=None):
+    """Print results."""
+    print(f"\nOverall: P={results['precision']:.4f}, R={results['recall']:.4f}, F1={results['f1']:.4f}")
+    print(f"TP={results['true_positives']}, FP={results['false_positives']}, FN={results['false_negatives']}")
+    if by_type:
+        for et, m in sorted(by_type.items()):
+            print(f"  {et}: P={m['precision']:.4f}, R={m['recall']:.4f}, F1={m['f1']:.4f}")

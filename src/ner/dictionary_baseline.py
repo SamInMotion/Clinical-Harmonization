@@ -156,7 +156,7 @@ def extract_entities_from_text(text: str, dictionary, min_length: int = 4):
                             'text': span_stripped,
                             'type': entry['type'],
                             'mesh_id': entry['mesh_id'],
-                            'offset': new_offset,
+                            'offset': new_offset,  # passage-local offset
                             'length': new_length
                         })
     

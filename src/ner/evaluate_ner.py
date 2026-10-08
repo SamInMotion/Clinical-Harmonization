@@ -31,11 +31,14 @@ def extract_gold_entities(documents):
     """
     Extract gold-standard entities from documents.
     
+    Uses local_offset (passage-local) for fair comparison with predictions.
+    
     Args:
         documents: List of documents from load_bc5cdr()
     
     Returns:
         List of {text, type, mesh_id, offset, length, doc_id, passage_type}
+        where offset is passage-local
     """
     gold_entities = []
     
@@ -46,7 +49,7 @@ def extract_gold_entities(documents):
                     'text': ann['text'].strip(),
                     'type': ann['type'],
                     'mesh_id': ann['mesh_id'],
-                    'offset': ann['offset'],
+                    'offset': ann['local_offset'],  # passage-local (CRITICAL FIX)
                     'length': len(ann['text'].strip()),
                     'doc_id': doc['id'],
                     'passage_type': passage['type']
@@ -55,7 +58,7 @@ def extract_gold_entities(documents):
     return gold_entities
 
 
-def extract_predicted_entities(documents, dictionary, min_length: int = 3):
+def extract_predicted_entities(documents, dictionary, min_length: int = 4):
     """
     Extract predicted entities from documents using dictionary baseline.
     
@@ -66,6 +69,7 @@ def extract_predicted_entities(documents, dictionary, min_length: int = 3):
     
     Returns:
         List of {text, type, mesh_id, offset, length, doc_id, passage_type}
+        where offset is passage-local
     """
     predicted_entities = []
     
@@ -78,7 +82,7 @@ def extract_predicted_entities(documents, dictionary, min_length: int = 3):
                     'text': match['text'],
                     'type': match['type'],
                     'mesh_id': match['mesh_id'],
-                    'offset': match['offset'],
+                    'offset': match['offset'],  # already passage-local
                     'length': match['length'],
                     'doc_id': doc['id'],
                     'passage_type': passage['type']
@@ -184,18 +188,18 @@ def main():
     print(f"Loading BC5CDR test set...")
     test_documents = load_bc5cdr(str(test_path))
     
-    # Extract gold-standard entities
-    print(f"Extracting gold-standard entities...")
+    # Extract gold-standard entities (using local_offset)
+    print(f"Extracting gold-standard entities (local_offset)...")
     gold_entities = extract_gold_entities(test_documents)
     print(f"Gold entities: {len(gold_entities)}")
     
     # Extract predicted entities
     print(f"Extracting predicted entities (dictionary baseline)...")
-    predicted_entities = extract_predicted_entities(test_documents, dictionary, min_length=3)
+    predicted_entities = extract_predicted_entities(test_documents, dictionary, min_length=4)
     print(f"Predicted entities: {len(predicted_entities)}")
     
     # Calculate metrics
-    print(f"\n=== Evaluation Results (Exact Span Match) ===")
+    print(f"\n=== Evaluation Results (Exact Span Match, LOCAL OFFSETS) ===")
     metrics = calculate_metrics(gold_entities, predicted_entities)
     print(f"Precision: {metrics['precision']:.4f}")
     print(f"Recall: {metrics['recall']:.4f}")
@@ -241,6 +245,12 @@ def main():
     print(f"\nDiseases:")
     print(f"  Precision: {metrics_disease['precision']:.4f}, Recall: {metrics_disease['recall']:.4f}, F1: {metrics_disease['f1']:.4f}")
     print(f"  TP: {metrics_disease['tp']}, FP: {metrics_disease['fp']}, FN: {metrics_disease['fn']}")
+    
+    # Note on coordinate system
+    print(f"\n=== IMPORTANT ===")
+    print(f"All offsets are now PASSAGE-LOCAL (not document-global).")
+    print(f"This ensures fair comparison between gold and predicted entities.")
+    print(f"Previous results (F1 = 0.0966) used mixed coordinate systems and are INVALID.")
 
 
 if __name__ == "__main__":
