@@ -15,6 +15,11 @@ Output:
 from collections import defaultdict
 from pathlib import Path
 import json
+import sys
+from typing import List, Dict
+
+# Fix import path
+sys.path.insert(0, str(Path(__file__).parent))
 from load_bc5cdr import load_bc5cdr, get_corpus_stats
 
 
