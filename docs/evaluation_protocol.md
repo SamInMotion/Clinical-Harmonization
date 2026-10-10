@@ -27,16 +27,22 @@ This document describes the evaluation protocol for the clinical harmonization p
 - Recall = TP / (TP + FN)
 - F1 = 2 * Precision * Recall / (Precision + Recall)
 
-**Results:**
-- Precision: 0.797
-- Recall: 0.565
-- F1: 0.661
+**Current result (Gate C-2, 2026-10-10):**
+- Gold denominator: 9,965 location-level gold spans
+- Precision: 0.7981
+- Recall: 0.5642
+- F1: 0.6611
+- TP: 5,617
+- FP: 1,421
+- FN: 4,339
+
+**Historical one-location result:** F1 0.6614 using 9,928 annotation records; superseded because it retained only the first BioC location per annotation.
 
 ---
 
 ### 2. Entity Linking
 
-**Metric:** Linking rate
+**Metric:** Predicted-mention terminology coverage; not linking accuracy
 
 **Definition:**
 - **Linked:** Entity has concept_id (matched to terminology)
@@ -54,7 +60,7 @@ This document describes the evaluation protocol for the clinical harmonization p
 
 ### 3. OMOP Domain Routing
 
-**Metric:** Routing rate
+**Metric:** Pass-through routing coverage; not semantic routing accuracy or OMOP CDM validation
 
 **Definition:**
 - **Routed:** Entity has omop_table (drug_exposure or condition_occurrence)
@@ -71,7 +77,7 @@ This document describes the evaluation protocol for the clinical harmonization p
 
 ### 4. FHIR Transformation
 
-**Metric:** Transformation rate
+**Metric:** Pass-through serialization coverage; not FHIR conformance validation
 
 **Definition:**
 - **Transformed:** OMOP record has FHIR resource
@@ -86,21 +92,20 @@ This document describes the evaluation protocol for the clinical harmonization p
 
 ---
 
-### 5. End-to-End Survival
+### 5. Raw End-to-End Count Ratio
 
-**Metric:** Survival rate
+**Metric:** Raw FHIR-resource-to-gold-location-span count ratio
 
 **Definition:**
-- **Survived:** Gold entity has corresponding FHIR resource
-- **Lost:** Gold entity does not have FHIR resource
+- This is a raw pipeline count ratio.
+- It does **not** join FHIR resources to gold spans.
+- It does **not** verify that a gold mention was correctly extracted, linked, routed, or represented.
+- It must not be interpreted as end-to-end accuracy or correctness.
 
-**Formula:**
-- Survival rate = FHIR resources / Gold entities
-
-**Results:**
-- Gold entities: 9,928
+**Current result:**
+- Gold location spans: 9,965
 - FHIR resources: 785
-- Survival rate: 7.9%
+- Raw count ratio: 7.9%
 
 ---
 
@@ -113,18 +118,21 @@ This document describes the evaluation protocol for the clinical harmonization p
 ### Linking errors
 - **Unlinked:** Entities not in terminology (limited coverage)
 
-### OMOP/FHIR errors
-- **None** — 100% routing and transformation rates
+### OMOP/FHIR limitations
+- Routing and serialization are pass-through counts, not validated semantic correctness.
+- No OMOP CDM validation or FHIR conformance validation has been performed.
 
 ---
 
 ## Evaluation Design
 
-**Test set:** BC5CDR Test Set (500 abstracts, 9,928 gold entities)
+**Test set:** BC5CDR Test Set (500 abstracts, 9,965 location-level gold spans)
 
 **Coordinate system:** Passage-local offsets (not document-global)
 
-**Matching:** Exact span match (doc_id, passage_type, offset, length)
+**Matching:** Exact span match on document ID, passage type, passage-local offset, location length, and entity type.
+
+**Gold representation:** One gold span per BioC `<location>`; annotation-level text and MeSH ID are retained as provenance.
 
 ---
 
