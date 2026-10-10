@@ -252,7 +252,7 @@ load_bc5cdr()
 
 ### Gate C closeout
 
-**Status:** COMPLETE on 2026-10-10  
+**Status:** COMPLETE on 2026-10-10
 **Completed:**
 
 - Gate C-1: all BioC annotation locations are preserved.
