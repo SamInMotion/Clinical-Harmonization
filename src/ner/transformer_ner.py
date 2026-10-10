@@ -108,24 +108,30 @@ class BC5CDRDataset(Dataset):
                 token_offsets.append((pos, pos + len(token)))
                 current_pos = pos + len(token)
         
-        # Assign labels based on annotations
+        # Assign labels based on every BioC annotation location.
+        # Gate C-3: the first location receives a B label; subsequent
+        # locations of the same annotation receive I labels.
         for ann in passage['annotations']:
-            ann_start = ann['local_offset']
-            ann_end = ann_start + ann['length']
             ann_type = ann['type']
-            
-            # Find tokens that overlap with this annotation
-            for i, (tok_start, tok_end) in enumerate(token_offsets):
-                # Check if token overlaps with annotation
-                if tok_start < ann_end and tok_end > ann_start:
-                    # Token is inside or overlaps with annotation
-                    if tok_start == ann_start:
-                        # Start of entity → B-label
-                        labels[i] = f'B-{ann_type}'
-                    else:
-                        # Inside entity → I-label
-                        labels[i] = f'I-{ann_type}'
-        
+
+            for location_index, location in enumerate(
+                ann['locations']
+            ):
+                ann_start = location['local_offset']
+                ann_end = ann_start + location['length']
+                location_label = (
+                    f'B-{ann_type}'
+                    if location_index == 0
+                    else f'I-{ann_type}'
+                )
+
+                for i, (tok_start, tok_end) in enumerate(token_offsets):
+                    if tok_start < ann_end and tok_end > ann_start:
+                        if tok_start == ann_start:
+                            labels[i] = location_label
+                        else:
+                            labels[i] = f'I-{ann_type}'
+
         # Convert to label IDs
         label_ids = [LABEL2ID.get(label, LABEL2ID['O']) for label in labels]
         

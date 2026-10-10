@@ -245,7 +245,7 @@ load_bc5cdr()
 
 ### Gate C-3: Transformer location labeling
 
-**Status:** APPROVED, NOT IMPLEMENTED  
+**Status:** IMPLEMENTED; focused BIO-label tests passed on 2026-10-10
 **Scope:** `transformer_ner.py` BIO-label construction and focused tests only.  
 **Requirement:** Iterate all annotation locations when assigning BIO labels.  
 **Acceptance evidence:** Synthetic two-location BIO test passes. This does not establish model, tokenizer-alignment, or training readiness.
