@@ -14,9 +14,9 @@
 |---|---|---|
 | Repository | `clinical-harmonization` | 2026-10-10 |
 | Branch | `master` | 2026-10-10 |
-| HEAD before this register | `95ca969` — `docs: add gated project handoff` | 2026-10-10 |
+| HEAD | `d4bf54c` — `fix: label every BioC annotation location for transformer NER` | 2026-10-10 |
 | Checkpoint anchor | `b27abb2` — `docs: add clinical harmonization session checkpoint` | 2026-10-10 |
-| Working tree | Clean except untracked `src/evaluation/dashboard.py` | 2026-10-10 |
+| Working tree | Clean except untracked `src/evaluation/dashboard.py`; Gate C-1 through C-3 completed | 2026-10-10 |
 | Dashboard | Untracked; not part of committed project state | 2026-10-10 |
 | Active Python | Global Python 3.14.4 (`C:\Users\samue.KITAB\AppData\Local\Programs\Python\Python314\python.exe`) | 2026-10-10 |
 | Project virtual environment | `.venv/` exists and was created with Python 3.14.4 | 2026-10-10 |
@@ -250,8 +250,27 @@ load_bc5cdr()
 **Requirement:** Iterate all annotation locations when assigning BIO labels.  
 **Acceptance evidence:** Synthetic two-location BIO test passes. This does not establish model, tokenizer-alignment, or training readiness.
 
+### Gate C closeout
+
+**Status:** COMPLETE on 2026-10-10  
+**Completed:**
+
+- Gate C-1: all BioC annotation locations are preserved.
+- Gate C-2: NER evaluation, error decomposition, and scispaCy evaluation use location-level, type-aware exact matching.
+- Gate C-3: transformer BIO labeling covers every annotation location.
+- Dictionary baseline rerun under Gate C-2 policy: F1 0.6611 on 9,965 location-level gold spans.
+- Eight focused regression tests pass.
+
+### Next gated actions
+
+1. Decide whether to regenerate `error_decomposition.json` and downstream dashboard artifacts under the Gate C-2 evaluation policy.
+2. Reconcile `MANIFEST.md` and `docs/evaluation_protocol.md` with the implemented state.
+3. Decide the committed status of `src/evaluation/dashboard.py`; it remains untracked.
+4. Treat transformer work as blocked until model access, tokenizer alignment, and training prerequisites are separately verified.
+5. Do not make semantic linking, OMOP-validity, FHIR-conformance, or end-to-end correctness claims without new per-mention evaluation evidence.
+
 ### Blocked / out of scope
 
-- `evaluate_transformer.py`: broken imports and incompatible `doc.all_entities` interface; do not modify during Gate C.
+- `evaluate_transformer.py`: broken imports and incompatible `doc.all_entities` interface; remains blocked.
 - Transformer training, model access, tokenizer alignment, and training-run validation: separate gates.
 - Dashboard staging/committing: separate decision; remains untracked.
