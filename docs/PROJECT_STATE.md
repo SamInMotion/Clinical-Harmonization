@@ -138,12 +138,30 @@ load_bc5cdr()
 - **Value:** 0.6614
 - **Precision:** 0.7970
 - **Recall:** 0.5653
-- **Status:** PROVISIONAL / SUPERSEDED PENDING GATE C
+- **Status:** SUPERSEDED by R-006; retained as historical one-location-representation result
 - **Dataset:** BC5CDR test set; 500 documents
 - **Denominator:** 9,928 gold annotation records under one-location representation
 - **Matching:** Exact span; document, passage type, offset, and length; entity type excluded
 - **Known limitation:** Uses first BioC location only; multi-location annotations are misrepresented
 - **Action:** Rerun after location-level gold spans and type-aware matching. Preserve this value as historical provenance.
+
+### R-006: Gate C-2 dictionary NER F1
+
+- **Value:** 0.6611
+- **Precision:** 0.7981
+- **Recall:** 0.5642
+- **Status:** CURRENT under Gate C-2 policy
+- **Date:** 2026-10-10
+- **Dataset:** BC5CDR test set; 500 documents
+- **Gold denominator:** 9,965 location-level gold spans
+- **Predicted entities:** 7,038
+- **Matching:** Exact match on document ID, passage type, passage-local offset, location length, and entity type
+- **Confusion matrix:** TP 5,617; FP 1,421; FN 4,339
+- **Chemical results:** Precision 0.8103; recall 0.5380; F1 0.6466; TP 2,904; FP 680; FN 2,494
+- **Disease results:** Precision 0.7855; recall 0.5952; F1 0.6772; TP 2,713; FP 741; FN 1,845
+- **Evidence:** `output/evaluation/evaluate_ner_gate_c2_2026-10-10.txt`
+- **Scope limitation:** Exact span matching only; no semantic correctness, terminology-linking accuracy, OMOP validity, or FHIR conformance claim
+- **Supersedes:** R-002 for current reporting
 
 ### R-003: Linking coverage
 
@@ -220,7 +238,7 @@ load_bc5cdr()
 
 ### Gate C-2: Location-level evaluation
 
-**Status:** APPROVED, NOT IMPLEMENTED  
+**Status:** IMPLEMENTED; tests passed; baseline rerun on 2026-10-10
 **Scope:** `evaluate_ner.py`, `error_decomposition.py`, and `scispacy_ner.py`.  
 **Requirement:** One gold entity per location; use location-specific offset/length; include entity type in match key.  
 **Acceptance evidence:** Focused tests pass; dictionary baseline is rerun; new result recorded as a correction with provenance.

@@ -20,6 +20,7 @@ import spacy
 from seqeval.metrics import classification_report
 
 from load_bc5cdr import load_bc5cdr
+from gold_spans import extract_gold_location_spans, entity_to_key
 
 
 # Label mapping for BC5CDR (scispaCy uses different labels)
@@ -92,20 +93,9 @@ def evaluate_scispacy(
     test_docs = load_bc5cdr(test_path)
     print(f"Test documents: {len(test_docs)}")
     
-    # Extract gold entities
-    gold_entities = []
-    for doc in test_docs:
-        for passage in doc['passages']:
-            for ann in passage['annotations']:
-                gold_entities.append({
-                    'text': ann['text'],
-                    'type': ann['type'],
-                    'offset': ann['local_offset'],
-                    'length': len(ann['text']),
-                    'doc_id': doc['id'],
-                    'passage_type': passage['type']
-                })
-    
+    # Extract location-level gold entities.
+    gold_entities = extract_gold_location_spans(test_docs)
+
     print(f"Gold entities: {len(gold_entities)}")
     
     # Extract predicted entities
@@ -126,8 +116,8 @@ def evaluate_scispacy(
     print(f"Predicted entities: {len(predicted_entities)}")
     
     # Calculate metrics (exact span match)
-    gold_keys = set((e['doc_id'], e['passage_type'], e['offset'], e['length']) for e in gold_entities)
-    pred_keys = set((e['doc_id'], e['passage_type'], e['offset'], e['length']) for e in predicted_entities)
+    gold_keys = set(entity_to_key(e) for e in gold_entities)
+    pred_keys = set(entity_to_key(e) for e in predicted_entities)
     
     tp = len(gold_keys & pred_keys)
     fp = len(pred_keys - gold_keys)
@@ -149,8 +139,8 @@ def evaluate_scispacy(
     # Chemicals
     gold_chem = [e for e in gold_entities if e['type'] == 'Chemical']
     pred_chem = [e for e in predicted_entities if e['type'] == 'Chemical']
-    gold_chem_keys = set((e['doc_id'], e['passage_type'], e['offset'], e['length']) for e in gold_chem)
-    pred_chem_keys = set((e['doc_id'], e['passage_type'], e['offset'], e['length']) for e in pred_chem)
+    gold_chem_keys = set(entity_to_key(e) for e in gold_chem)
+    pred_chem_keys = set(entity_to_key(e) for e in pred_chem)
     tp_chem = len(gold_chem_keys & pred_chem_keys)
     fp_chem = len(pred_chem_keys - gold_chem_keys)
     fn_chem = len(gold_chem_keys - pred_chem_keys)
@@ -162,8 +152,8 @@ def evaluate_scispacy(
     # Diseases
     gold_disease = [e for e in gold_entities if e['type'] == 'Disease']
     pred_disease = [e for e in predicted_entities if e['type'] == 'Disease']
-    gold_disease_keys = set((e['doc_id'], e['passage_type'], e['offset'], e['length']) for e in gold_disease)
-    pred_disease_keys = set((e['doc_id'], e['passage_type'], e['offset'], e['length']) for e in pred_disease)
+    gold_disease_keys = set(entity_to_key(e) for e in gold_disease)
+    pred_disease_keys = set(entity_to_key(e) for e in pred_disease)
     tp_disease = len(gold_disease_keys & pred_disease_keys)
     fp_disease = len(pred_disease_keys - gold_disease_keys)
     fn_disease = len(gold_disease_keys - pred_disease_keys)

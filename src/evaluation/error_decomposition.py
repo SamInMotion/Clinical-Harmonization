@@ -22,6 +22,7 @@ from typing import List, Dict, Optional
 # Fix import path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from ner.load_bc5cdr import load_bc5cdr
+from ner.gold_spans import extract_gold_location_spans, entity_to_key
 from ner.dictionary_baseline import build_dictionary, extract_entities_from_text, load_dictionary
 from linking.entity_linking import link_entity, link_entities_from_documents, TERMINOLOGY
 from mapping.omop_routing import route_to_omop, route_entities_from_documents
@@ -54,20 +55,9 @@ def decompose_errors(
     test_docs = load_bc5cdr(test_path)
     print(f"Test documents: {len(test_docs)}")
     
-    # Extract gold entities
-    gold_entities = []
-    for doc in test_docs:
-        for passage in doc['passages']:
-            for ann in passage['annotations']:
-                gold_entities.append({
-                    'text': ann['text'],
-                    'type': ann['type'],
-                    'offset': ann['local_offset'],
-                    'length': len(ann['text']),
-                    'doc_id': doc['id'],
-                    'passage_type': passage['type']
-                })
-    
+    # Extract location-level gold entities.
+    gold_entities = extract_gold_location_spans(test_docs)
+
     print(f"Gold entities: {len(gold_entities)}")
     
     # Extract predicted entities
@@ -104,8 +94,8 @@ def decompose_errors(
     print(f"\n=== Error Decomposition ===")
     
     # Stage 1: Extraction
-    gold_keys = set((e['doc_id'], e['passage_type'], e['offset'], e['length']) for e in gold_entities)
-    pred_keys = set((e['doc_id'], e['passage_type'], e['offset'], e['length']) for e in predicted_entities)
+    gold_keys = set(entity_to_key(e) for e in gold_entities)
+    pred_keys = set(entity_to_key(e) for e in predicted_entities)
     
     extraction_tp = len(gold_keys & pred_keys)
     extraction_fp = len(pred_keys - gold_keys)
