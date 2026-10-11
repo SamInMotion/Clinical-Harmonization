@@ -43,7 +43,16 @@ def test_bio_labels_cover_both_locations():
     }
 
     tokens = ["Cerebellar", "dysfunction", "was", "observed", "."]
-    labels = dataset._build_bio_labels(passage, tokens)
+    token_offsets = [
+        (0, 10),
+        (11, 22),
+        (23, 26),
+        (27, 35),
+        (35, 36),
+    ]
+    labels = dataset._build_bio_labels(
+        passage, tokens, token_offsets
+    )
 
     assert labels == [
         LABEL2ID["B-Disease"],
@@ -81,7 +90,15 @@ def test_single_location_bio_labels_unchanged():
     }
 
     tokens = ["Aspirin", "reduces", "pain", "."]
-    labels = dataset._build_bio_labels(passage, tokens)
+    token_offsets = [
+        (0, 7),
+        (8, 15),
+        (16, 20),
+        (20, 21),
+    ]
+    labels = dataset._build_bio_labels(
+        passage, tokens, token_offsets
+    )
 
     assert labels == [
         LABEL2ID["B-Chemical"],

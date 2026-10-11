@@ -51,10 +51,20 @@ class BC5CDRDataset(Dataset):
         for doc in documents:
             for passage in doc['passages']:
                 # Tokenize passage text
-                tokens = tokenizer.tokenize(passage['text'])
-                
-                # Build BIO labels
-                labels = self._build_bio_labels(passage, tokens)
+                encoded = tokenizer(
+                    passage['text'],
+                    add_special_tokens=False,
+                    return_offsets_mapping=True,
+                    truncation=True,
+                    max_length=max_length - 2,
+                )
+
+                tokens = encoded.tokens()
+                token_offsets = encoded['offset_mapping']
+
+                labels = self._build_bio_labels(
+                    passage, tokens, token_offsets
+                )
                 
                 # Truncate if necessary
                 if len(tokens) > max_length - 2:  # [CLS] and [SEP]
@@ -78,7 +88,9 @@ class BC5CDRDataset(Dataset):
                     'text': passage['text']
                 })
     
-    def _build_bio_labels(self, passage, tokens):
+    def _build_bio_labels(
+        self, passage, tokens, token_offsets
+    ):
         """
         Build BIO labels for tokens.
         
@@ -92,22 +104,7 @@ class BC5CDRDataset(Dataset):
         # Initialize all tokens as O
         labels = ['O'] * len(tokens)
         
-        # Get token offsets from tokenizer
-        # We need to map character offsets to token indices
-        
-        # Re-tokenize to get offset mapping
-        token_offsets = []
-        current_pos = 0
-        for token in tokens:
-            # Find token in passage text starting from current_pos
-            pos = passage['text'].find(token, current_pos)
-            if pos == -1:
-                # Token not found (might be special token or subword)
-                token_offsets.append((current_pos, current_pos + len(token)))
-            else:
-                token_offsets.append((pos, pos + len(token)))
-                current_pos = pos + len(token)
-        
+        # Assign labels based on every BioC annotation location.
         # Assign labels based on every BioC annotation location.
         # Gate C-3: the first location receives a B label; subsequent
         # locations of the same annotation receive I labels.
