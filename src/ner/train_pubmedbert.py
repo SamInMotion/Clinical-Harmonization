@@ -1,3 +1,4 @@
+
 """Full PubMedBERT fine-tuning for BC5CDR NER."""
 
 import json
@@ -18,12 +19,16 @@ from transformers import (
     get_linear_schedule_with_warmup,
 )
 
-XML_PATH = Path(
-    "data/raw/bc5cdr/CDR_Data/CDR.Corpus.v010516/CDR_TrainingSet.BioC.xml"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+XML_PATH = (
+    PROJECT_ROOT
+    / "data/raw/bc5cdr/CDR_Data/CDR.Corpus.v010516/"
+    "CDR_TrainingSet.BioC.xml"
 )
-MODEL_PATH = Path("models/pubmedbert-local")
-OUTPUT_DIR = Path("output/training/pubmedbert_bc5cdr")
-LOG_PATH = Path("output/logs/pubmedbert_bc5cdr_training.json")
+MODEL_PATH = PROJECT_ROOT / "models/pubmedbert-local"
+OUTPUT_DIR = PROJECT_ROOT / "output/training/pubmedbert_bc5cdr"
+LOG_PATH = PROJECT_ROOT / "output/logs/pubmedbert_bc5cdr_training.json"
 
 SEED = 42
 EPOCHS = 3
@@ -52,15 +57,21 @@ def main():
         local_files_only=True,
     )
 
-    data = load_bc5cdr(XML_PATH)
-    train_passages = data["train"]
+    if not tokenizer.is_fast:
+        raise RuntimeError(
+            "A fast tokenizer is required for character-offset alignment."
+        )
+
+    documents = load_bc5cdr(str(XML_PATH))
+    print(f"Loaded training documents: {len(documents)}")
 
     dataset = BC5CDRDataset(
-        passages=train_passages,
+        documents=documents,
         tokenizer=tokenizer,
-        label2id=LABEL2ID,
         max_length=MAX_LENGTH,
     )
+
+    print(f"Training examples: {len(dataset)}")
 
     data_collator = DataCollatorForTokenClassification(tokenizer)
 
