@@ -112,6 +112,15 @@ def main():
     documents = load_bc5cdr(str(TEST_XML))
     gold = gold_entities(documents)
     mapped = load_mapped(str(MAPPED_CSV))
+    unique_gold_keys = {
+        (
+            entity["document_id"],
+            entity["start"],
+            entity["end"],
+            entity["entity_type"],
+        )
+        for entity in gold
+    }
 
     gold_by_key = {
         (
