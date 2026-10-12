@@ -228,15 +228,7 @@ def main():
         else 0.0
     )
 
-    unique_gold_keys = {
-        (
-            entity["document_id"],
-            entity["start"],
-            entity["end"],
-            entity["entity_type"],
-        )
-        for entity in gold
-    }
+
 
     results = {
         "experiment": "EXP-011",
@@ -277,7 +269,7 @@ def main():
     )
 
     print("=== EXP-011 mapping-quality evaluation ===")
-    print(f"Gold entities: {len(gold)}")
+    print(f"Gold entities: {len(unique_gold_keys)}")
     print(f"Mapped records: {len(mapped)}")
     print(f"Gold-supported mapped: {len(supported_mapped)}")
     print(f"Unsupported mapped: {len(unsupported_mapped)}")
