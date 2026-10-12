@@ -22,7 +22,23 @@ It improved precision by 8.8 percentage points and F1 by 2.8 percentage points.
 
 ## Harmonization result
 
-To be completed from `output/harmonization/exp009/summary.json`.
+| Measure | Submitted MVP | Substring dictionary | Word-boundary dictionary |
+|---|---:|---:|---:|
+| Extracted occurrences | 1,715 | 7,038 | 6,338 |
+| Mapped | 579 | 552 | 540 |
+| Unmapped | 1,136 | 6,486 | 5,798 |
+| Vocabulary coverage | 33.8% | 7.8% | 8.5% |
+| `drug_exposure` | Not stated | 378 | 371 |
+| `condition_occurrence` | Not stated | 174 | 169 |
+
+Word-boundary matching reduced extracted occurrences by 700 and unmapped
+occurrences by 688. Mapped occurrences decreased by 12 because the removed
+matches were substring artifacts rather than valid whole-word vocabulary
+matches.
+
+Vocabulary coverage increased from 7.8% to 8.5% because the extraction
+denominator became smaller while the number of valid vocabulary matches remained
+nearly unchanged.
 
 ## Decision
 
