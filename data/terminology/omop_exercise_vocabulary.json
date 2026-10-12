@@ -1,0 +1,33 @@
+{
+  "concepts": [
+    {"concept_id": 1110410, "concept_name": "morphine", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 1760616, "concept_name": "quinine", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 1112807, "concept_name": "aspirin", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 1177480, "concept_name": "ibuprofen", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 1367571, "concept_name": "heparin", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 1310149, "concept_name": "warfarin", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 1551099, "concept_name": "prednisone", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 1103640, "concept_name": "methadone", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 1397599, "concept_name": "cisplatin", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 1101554, "concept_name": "colchicine", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 715233, "concept_name": "baclofen", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 766529, "concept_name": "haloperidol", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 800878, "concept_name": "clozapine", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 955372, "concept_name": "ethanol", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 718583, "concept_name": "nicotine", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 1134439, "concept_name": "caffeine", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 19124477, "concept_name": "lithium", "domain_id": "Drug", "vocabulary_id": "RxNorm"},
+    {"concept_id": 441542, "concept_name": "Anxiety", "domain_id": "Condition", "vocabulary_id": "SNOMED"},
+    {"concept_id": 377091, "concept_name": "Seizure", "domain_id": "Condition", "vocabulary_id": "SNOMED"},
+    {"concept_id": 31967, "concept_name": "Nausea", "domain_id": "Condition", "vocabulary_id": "SNOMED"},
+    {"concept_id": 441408, "concept_name": "Vomiting", "domain_id": "Condition", "vocabulary_id": "SNOMED"},
+    {"concept_id": 443782, "concept_name": "Tremor", "domain_id": "Condition", "vocabulary_id": "SNOMED"},
+    {"concept_id": 444070, "concept_name": "Tachycardia", "domain_id": "Condition", "vocabulary_id": "SNOMED"},
+    {"concept_id": 4169095, "concept_name": "Bradycardia", "domain_id": "Condition", "vocabulary_id": "SNOMED"},
+    {"concept_id": 4214376, "concept_name": "Hyperglycemia", "domain_id": "Condition", "vocabulary_id": "SNOMED"},
+    {"concept_id": 24609, "concept_name": "Hypoglycemia", "domain_id": "Condition", "vocabulary_id": "SNOMED"},
+    {"concept_id": 4333677, "concept_name": "Mania", "domain_id": "Condition", "vocabulary_id": "SNOMED"},
+    {"concept_id": 4195305, "concept_name": "Hyperactive behavior", "domain_id": "Condition", "vocabulary_id": "SNOMED"},
+    {"concept_id": 4224759, "concept_name": "Hyperactivity level", "domain_id": "Observation", "vocabulary_id": "SNOMED"}
+  ]
+}
