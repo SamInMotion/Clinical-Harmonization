@@ -1,7 +1,7 @@
 # EXP-010: controlled vocabulary coverage
 
 **Date:** 2026-10-12  
-**Status:** Planned  
+**Status:** Completed  
 **Baseline:** EXP-009 word-boundary dictionary pipeline  
 **Input:** 500 raw BC5CDR test-set JSON abstracts  
 **Vocabulary:** 29-concept OMOP exercise vocabulary  
@@ -11,46 +11,74 @@
 Increase useful vocabulary coverage while preserving domain-safe routing and
 explicit abstention.
 
-## Baseline
+## Method
 
-EXP-009 produced:
+Added controlled normalization before exact vocabulary lookup:
 
-- 6,338 extracted occurrences;
-- 540 mapped occurrences;
-- 5,798 unmapped occurrences;
-- 8.5% vocabulary coverage;
-- 371 drug_exposure records;
-- 169 condition_occurrence records.
+- lowercase and whitespace normalization;
+- curated spelling aliases;
+- limited possessive normalization;
+- limited plural normalization.
 
-## Planned conditions
+The aliases map British spellings to their supplied vocabulary equivalents:
 
-| Condition | Matching strategy |
-|---|---|
-| A: EXP-009 baseline | Exact normalized match |
-| B: Controlled aliases | Exact match after curated spelling/variant aliases |
-| C: Inflectional normalization | Exact match after limited plural/possessive normalization |
-| D: Candidate review | RapidFuzz candidates retained for inspection only |
+- `hyperglycaemia` to `hyperglycemia`;
+- `hypoglycaemia` to `hypoglycemia`.
 
-## Non-goals
+The plural rule maps regular plural forms to their singular vocabulary forms.
+It does not use fuzzy matching, embedding similarity, or automatic semantic
+matching.
 
-- Automatic fuzzy mapping.
-- LLM-based mapping.
-- Embedding retrieval.
-- Forcing unmapped mentions into incorrect concepts.
+## Result
 
-## Evaluation
+| Measure | EXP-009 baseline | EXP-010 controlled normalization |
+|---|---:|---:|
+| Extracted occurrences | 6,338 | 6,338 |
+| Mapped | 540 | 651 |
+| Unmapped | 5,798 | 5,687 |
+| Vocabulary coverage | 8.5% | 10.3% |
+| `drug_exposure` | 371 | 371 |
+| `condition_occurrence` | 169 | 280 |
 
-Measure:
+Controlled normalization added 111 mapped occurrences. All additional mappings
+were routed to `condition_occurrence`.
 
-- mapped occurrences;
-- vocabulary coverage;
-- new mappings introduced;
-- mappings changed;
-- domain-routing correctness;
-- extraction F1, which must remain unchanged unless extraction changes.
+## New mappings
+
+| Mention | Concept | Occurrences |
+|---|---|---:|
+| `seizures` | Seizure | 103 |
+| `Seizures` | Seizure | 5 |
+| `tremors` | Tremor | 3 |
+
+All new mappings are regular plural variants of existing Condition-domain
+vocabulary concepts. No Observation-domain concept was routed to an OMOP
+clinical table.
+
+## Decision
+
+Adopt controlled normalization in the EXP-010 harmonization pipeline.
+
+Retain explicit abstention for mentions without an exact normalized, alias, or
+controlled inflectional match. Do not enable automatic fuzzy matching.
+
+## Comparison with submitted MVP
+
+| Measure | Submitted MVP | EXP-010 |
+|---|---:|---:|
+| Extracted occurrences | 1,715 | 6,338 |
+| Mapped | 579 | 651 |
+| Unmapped | 1,136 | 5,687 |
+| Vocabulary coverage | 33.8% | 10.3% |
+
+EXP-010 maps more occurrences than the submitted MVP, but its coverage rate is
+lower because its broader BC5CDR dictionary extractor produces many valid
+biomedical mentions that are absent from the deliberately incomplete 29-concept
+vocabulary.
 
 ## Claims boundary
 
-Coverage growth is meaningful only when the added mappings are correct and
-domain-safe. This experiment does not establish end-to-end OMOP correctness or
-clinical deployment readiness.
+This demonstrates improved vocabulary coverage through controlled
+normalization. It does not establish independent mapping accuracy, end-to-end
+OMOP correctness, clinical deployment readiness, or generalization beyond
+BC5CDR.

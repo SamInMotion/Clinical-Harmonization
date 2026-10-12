@@ -47,8 +47,37 @@ DOMAIN_TO_TABLE = {
 ELIGIBLE_DOMAINS = set(DOMAIN_TO_TABLE)
 
 
+ALIASES = {
+    "hyperglycaemia": "hyperglycemia",
+    "hypoglycaemia": "hypoglycemia",
+}
+
+
 def normalize_mention(text):
-    return " ".join(text.lower().strip().split())
+    normalized = " ".join(text.lower().strip().split())
+    return ALIASES.get(normalized, normalized)
+
+
+def controlled_variants(normalized_mention):
+    """Return controlled spelling and inflectional variants.
+
+    This is not fuzzy matching. Each variant follows an explicit rule and is
+    used only for exact vocabulary lookup.
+    """
+    variants = [normalized_mention]
+
+    if normalized_mention.endswith("'s"):
+        variants.append(normalized_mention[:-2])
+
+    if normalized_mention.endswith("ies") and len(normalized_mention) > 4:
+        variants.append(normalized_mention[:-3] + "y")
+
+    if normalized_mention.endswith("s") and not normalized_mention.endswith(
+        "ss"
+    ):
+        variants.append(normalized_mention[:-1])
+
+    return variants
 
 
 def load_raw_documents(input_dir):
@@ -126,29 +155,34 @@ def build_occurrence(document, passage, match, extraction_method, confidence):
 
 
 def apply_exact_mapping(occurrence, exact_lookup):
-    concept = exact_lookup.get(occurrence["normalized_mention"])
+    for variant in controlled_variants(
+        occurrence["normalized_mention"]
+    ):
+        concept = exact_lookup.get(variant)
 
-    if concept is None:
+        if concept is None:
+            continue
+
+        occurrence.update(
+            {
+                "concept_id": concept["concept_id"],
+                "concept_name": concept["concept_name"],
+                "domain": concept["domain_id"],
+                "vocabulary": concept["vocabulary_id"],
+                "mapping_method": "exact_normalized_match",
+            }
+        )
+
+        if concept["domain_id"] in ELIGIBLE_DOMAINS:
+            occurrence["mapping_status"] = "mapped"
+            occurrence["destination_table"] = DOMAIN_TO_TABLE[
+                concept["domain_id"]
+            ]
+        else:
+            occurrence["mapping_status"] = "unmapped"
+            occurrence["mapping_method"] = "domain_not_eligible"
+
         return occurrence
-
-    occurrence.update(
-        {
-            "concept_id": concept["concept_id"],
-            "concept_name": concept["concept_name"],
-            "domain": concept["domain_id"],
-            "vocabulary": concept["vocabulary_id"],
-            "mapping_method": "exact_normalized_match",
-        }
-    )
-
-    if concept["domain_id"] in ELIGIBLE_DOMAINS:
-        occurrence["mapping_status"] = "mapped"
-        occurrence["destination_table"] = DOMAIN_TO_TABLE[
-            concept["domain_id"]
-        ]
-    else:
-        occurrence["mapping_status"] = "unmapped"
-        occurrence["mapping_method"] = "domain_not_eligible"
 
     return occurrence
 
@@ -270,7 +304,7 @@ def main():
     coverage = len(mapped) / len(records) if records else 0.0
 
     summary = {
-        "experiment": "EXP-009",
+        "experiment": "EXP-010",
         "status": "completed",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "input_directory": str(input_dir),
