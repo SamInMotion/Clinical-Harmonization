@@ -82,3 +82,33 @@ This demonstrates improved vocabulary coverage through controlled
 normalization. It does not establish independent mapping accuracy, end-to-end
 OMOP correctness, clinical deployment readiness, or generalization beyond
 BC5CDR.
+
+## Mapping-quality evaluation
+
+EXP-011 evaluated the 651 mapped records against location-level BC5CDR
+test-set gold entities.
+
+| Measure | Value |
+|---|---:|
+| Gold-supported mapped records | 629 |
+| Unsupported mapped records | 22 |
+| Mapping precision | 0.9662 |
+| Vocabulary-representable gold entities | 647 |
+| Vocabulary-representable mapped records | 629 |
+| Vocabulary recall | 0.9722 |
+
+The high mapping precision confirms that controlled normalization added
+valid plural variants rather than arbitrary fuzzy matches. The pipeline maps
+629 of 647 vocabulary-representable gold entities.
+
+## Accepted result
+
+EXP-010 is accepted as an improvement over EXP-009:
+
+- vocabulary coverage increased from 8.5% to 10.3%;
+- mapped occurrences increased from 540 to 651;
+- mapping precision is 0.9662;
+- vocabulary recall is 0.9722.
+
+The 22 unsupported mappings require separate error analysis and are not treated
+as correct.

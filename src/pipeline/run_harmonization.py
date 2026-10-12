@@ -8,14 +8,16 @@ and writes harmonized, mapped, unmapped, and summary outputs.
 import argparse
 import csv
 import json
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 import sys
 
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 NER_DIR = PROJECT_ROOT / "src" / "ner"
 sys.path.insert(0, str(NER_DIR))
+
 
 from dictionary_baseline import load_dictionary, extract_entities_from_text
 
@@ -39,10 +41,12 @@ FIELDNAMES = [
     "mapping_method",
 ]
 
+
 DOMAIN_TO_TABLE = {
     "Drug": "drug_exposure",
     "Condition": "condition_occurrence",
 }
+
 
 ELIGIBLE_DOMAINS = set(DOMAIN_TO_TABLE)
 
@@ -84,7 +88,9 @@ def load_raw_documents(input_dir):
     input_path = Path(input_dir)
 
     if not input_path.is_dir():
-        raise FileNotFoundError(f"Raw JSON input directory not found: {input_path}")
+        raise FileNotFoundError(
+            f"Raw JSON input directory not found: {input_path}"
+        )
 
     documents = []
 
@@ -93,7 +99,9 @@ def load_raw_documents(input_dir):
             document = json.load(handle)
 
         if "id" not in document or "passages" not in document:
-            raise ValueError(f"Invalid raw document structure: {json_path}")
+            raise ValueError(
+                f"Invalid raw document structure: {json_path}"
+            )
 
         documents.append(document)
 
@@ -121,6 +129,7 @@ def load_vocabulary(vocabulary_path):
 
     return concepts, exact_lookup
 
+
 def has_word_boundary(text, start, end):
     before_ok = start == 0 or not (
         text[start - 1].isalnum() or text[start - 1] == "_"
@@ -130,13 +139,21 @@ def has_word_boundary(text, start, end):
     )
     return before_ok and after_ok
 
-def build_occurrence(document, passage, match, extraction_method, confidence):
-    start = int(match["offset"])
+
+def build_occurrence(
+    document,
+    passage_type,
+    passage_offset,
+    match,
+    extraction_method,
+    confidence,
+):
+    start = passage_offset + int(match["offset"])
     end = start + int(match["length"])
 
     return {
         "document_id": document["id"],
-        "passage_type": passage["infons"]["type"],
+        "passage_type": passage_type,
         "mention_text": match["text"],
         "normalized_mention": normalize_mention(match["text"]),
         "start_char": start,
@@ -227,7 +244,12 @@ def main():
     )
     parser.add_argument(
         "--output-dir",
-        default=str(PROJECT_ROOT / "output" / "harmonization" / "exp009"),
+        default=str(
+            PROJECT_ROOT
+            / "output"
+            / "harmonization"
+            / "exp010"
+        ),
         help="Output directory",
     )
     parser.add_argument(
@@ -252,7 +274,10 @@ def main():
     records = []
 
     for document in documents:
+        passage_offset = 0
+
         for passage in document["passages"]:
+            passage_type = passage["infons"]["type"]
             text = passage.get("text") or ""
 
             candidates = extract_entities_from_text(
@@ -274,7 +299,8 @@ def main():
             for match in matches:
                 occurrence = build_occurrence(
                     document,
-                    passage,
+                    passage_type,
+                    passage_offset,
                     match,
                     extraction_method="dictionary_word_boundary",
                     confidence="high",
@@ -284,9 +310,17 @@ def main():
                 )
                 records.append(occurrence)
 
-    mapped = [record for record in records if record["mapping_status"] == "mapped"]
+            passage_offset += len(text) + 1
+
+    mapped = [
+        record
+        for record in records
+        if record["mapping_status"] == "mapped"
+    ]
     unmapped = [
-        record for record in records if record["mapping_status"] == "unmapped"
+        record
+        for record in records
+        if record["mapping_status"] == "unmapped"
     ]
 
     document_counts = Counter(
@@ -333,7 +367,7 @@ def main():
     ) as handle:
         json.dump(summary, handle, indent=2, ensure_ascii=False)
 
-    print("\n=== EXP-009 harmonization summary ===")
+    print("\n=== EXP-010 harmonization summary ===")
     print(f"Documents: {len(documents)}")
     print(f"Extracted occurrences: {len(records)}")
     print(f"Mapped: {len(mapped)}")
