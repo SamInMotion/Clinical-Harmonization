@@ -1,0 +1,612 @@
+[
+  {
+    "doc_id": "2924746",
+    "passage_type": "abstract",
+    "acronym": "CBZ",
+    "normalized_acronym": "cbz",
+    "expansion": "Carbamazepine",
+    "normalized_expansion": "carbamazepine",
+    "entity_type": "Chemical",
+    "mesh_id": "D002220"
+  },
+  {
+    "doc_id": "2924746",
+    "passage_type": "abstract",
+    "acronym": "CBZ",
+    "normalized_acronym": "cbz",
+    "expansion": "Carbamazepine",
+    "normalized_expansion": "carbamazepine",
+    "entity_type": "Chemical",
+    "mesh_id": "D002220"
+  },
+  {
+    "doc_id": "10193204",
+    "passage_type": "abstract",
+    "acronym": "TET",
+    "normalized_acronym": "tet",
+    "expansion": "Tetrandrine",
+    "normalized_expansion": "tetrandrine",
+    "entity_type": "Chemical",
+    "mesh_id": "C009438"
+  },
+  {
+    "doc_id": "10193204",
+    "passage_type": "abstract",
+    "acronym": "TET",
+    "normalized_acronym": "tet",
+    "expansion": "Tetrandrine",
+    "normalized_expansion": "tetrandrine",
+    "entity_type": "Chemical",
+    "mesh_id": "C009438"
+  },
+  {
+    "doc_id": "16160878",
+    "passage_type": "abstract",
+    "acronym": "U-II",
+    "normalized_acronym": "u-ii",
+    "expansion": "Urotensin-II",
+    "normalized_expansion": "urotensin-ii",
+    "entity_type": "Chemical",
+    "mesh_id": "D014579"
+  },
+  {
+    "doc_id": "16160878",
+    "passage_type": "abstract",
+    "acronym": "U-II",
+    "normalized_acronym": "u-ii",
+    "expansion": "Urotensin-II",
+    "normalized_expansion": "urotensin-ii",
+    "entity_type": "Chemical",
+    "mesh_id": "D014579"
+  },
+  {
+    "doc_id": "17175308",
+    "passage_type": "abstract",
+    "acronym": "SRL",
+    "normalized_acronym": "srl",
+    "expansion": "Sirolimus",
+    "normalized_expansion": "sirolimus",
+    "entity_type": "Chemical",
+    "mesh_id": "D020123"
+  },
+  {
+    "doc_id": "17175308",
+    "passage_type": "abstract",
+    "acronym": "SRL",
+    "normalized_acronym": "srl",
+    "expansion": "Sirolimus",
+    "normalized_expansion": "sirolimus",
+    "entity_type": "Chemical",
+    "mesh_id": "D020123"
+  },
+  {
+    "doc_id": "1919871",
+    "passage_type": "abstract",
+    "acronym": "RPN",
+    "normalized_acronym": "rpn",
+    "expansion": "Renal papillary necrosis",
+    "normalized_expansion": "renal papillary necrosis",
+    "entity_type": "Disease",
+    "mesh_id": "D007681"
+  },
+  {
+    "doc_id": "1919871",
+    "passage_type": "abstract",
+    "acronym": "RPN",
+    "normalized_acronym": "rpn",
+    "expansion": "Renal papillary necrosis",
+    "normalized_expansion": "renal papillary necrosis",
+    "entity_type": "Disease",
+    "mesh_id": "D007681"
+  },
+  {
+    "doc_id": "8092427",
+    "passage_type": "abstract",
+    "acronym": "PG",
+    "normalized_acronym": "pg",
+    "expansion": "benzylpenicillin",
+    "normalized_expansion": "benzylpenicillin",
+    "entity_type": "Chemical",
+    "mesh_id": "D010400"
+  },
+  {
+    "doc_id": "8092427",
+    "passage_type": "abstract",
+    "acronym": "AMP",
+    "normalized_acronym": "amp",
+    "expansion": "ampicillin",
+    "normalized_expansion": "ampicillin",
+    "entity_type": "Chemical",
+    "mesh_id": "D000667"
+  },
+  {
+    "doc_id": "8739323",
+    "passage_type": "abstract",
+    "acronym": "MTX",
+    "normalized_acronym": "mtx",
+    "expansion": "methotrexate",
+    "normalized_expansion": "methotrexate",
+    "entity_type": "Chemical",
+    "mesh_id": "D008727"
+  },
+  {
+    "doc_id": "8739323",
+    "passage_type": "abstract",
+    "acronym": "MTX",
+    "normalized_acronym": "mtx",
+    "expansion": "methotrexate",
+    "normalized_expansion": "methotrexate",
+    "entity_type": "Chemical",
+    "mesh_id": "D008727"
+  },
+  {
+    "doc_id": "11569530",
+    "passage_type": "abstract",
+    "acronym": "TDP",
+    "normalized_acronym": "tdp",
+    "expansion": "Torsades de pointes",
+    "normalized_expansion": "torsades de pointes",
+    "entity_type": "Disease",
+    "mesh_id": "D016171"
+  },
+  {
+    "doc_id": "11569530",
+    "passage_type": "abstract",
+    "acronym": "TDP",
+    "normalized_acronym": "tdp",
+    "expansion": "Torsades de pointes",
+    "normalized_expansion": "torsades de pointes",
+    "entity_type": "Disease",
+    "mesh_id": "D016171"
+  },
+  {
+    "doc_id": "12820454",
+    "passage_type": "abstract",
+    "acronym": "LHRH-A",
+    "normalized_acronym": "lhrh-a",
+    "expansion": "leuprolide acetate",
+    "normalized_expansion": "leuprolide acetate",
+    "entity_type": "Chemical",
+    "mesh_id": "D016729"
+  },
+  {
+    "doc_id": "15233872",
+    "passage_type": "abstract",
+    "acronym": "TCR",
+    "normalized_acronym": "tcr",
+    "expansion": "Tincture of Crataegus",
+    "normalized_expansion": "tincture of crataegus",
+    "entity_type": "Chemical",
+    "mesh_id": "C007145"
+  },
+  {
+    "doc_id": "15233872",
+    "passage_type": "abstract",
+    "acronym": "TCR",
+    "normalized_acronym": "tcr",
+    "expansion": "Tincture of Crataegus",
+    "normalized_expansion": "tincture of crataegus",
+    "entity_type": "Chemical",
+    "mesh_id": "C007145"
+  },
+  {
+    "doc_id": "18081909",
+    "passage_type": "abstract",
+    "acronym": "LEV",
+    "normalized_acronym": "lev",
+    "expansion": "levetiracetam",
+    "normalized_expansion": "levetiracetam",
+    "entity_type": "Chemical",
+    "mesh_id": "C026098"
+  },
+  {
+    "doc_id": "3828020",
+    "passage_type": "abstract",
+    "acronym": "PPA",
+    "normalized_acronym": "ppa",
+    "expansion": "Phenylpropanolamine",
+    "normalized_expansion": "phenylpropanolamine",
+    "entity_type": "Chemical",
+    "mesh_id": "D010665"
+  },
+  {
+    "doc_id": "3828020",
+    "passage_type": "abstract",
+    "acronym": "PPA",
+    "normalized_acronym": "ppa",
+    "expansion": "Phenylpropanolamine",
+    "normalized_expansion": "phenylpropanolamine",
+    "entity_type": "Chemical",
+    "mesh_id": "D010665"
+  },
+  {
+    "doc_id": "10704919",
+    "passage_type": "abstract",
+    "acronym": "TAM",
+    "normalized_acronym": "tam",
+    "expansion": "Tamoxifen",
+    "normalized_expansion": "tamoxifen",
+    "entity_type": "Chemical",
+    "mesh_id": "D013629"
+  },
+  {
+    "doc_id": "10704919",
+    "passage_type": "abstract",
+    "acronym": "TAM",
+    "normalized_acronym": "tam",
+    "expansion": "Tamoxifen",
+    "normalized_expansion": "tamoxifen",
+    "entity_type": "Chemical",
+    "mesh_id": "D013629"
+  },
+  {
+    "doc_id": "10706004",
+    "passage_type": "abstract",
+    "acronym": "L-NAME",
+    "normalized_acronym": "l-name",
+    "expansion": "nitro-L-arginine methyl ester",
+    "normalized_expansion": "nitro-l-arginine methyl ester",
+    "entity_type": "Chemical",
+    "mesh_id": "D019331"
+  },
+  {
+    "doc_id": "10706004",
+    "passage_type": "abstract",
+    "acronym": "L-NAME",
+    "normalized_acronym": "l-name",
+    "expansion": "nitro-L-arginine methyl ester",
+    "normalized_expansion": "nitro-l-arginine methyl ester",
+    "entity_type": "Chemical",
+    "mesh_id": "D019331"
+  },
+  {
+    "doc_id": "11334364",
+    "passage_type": "abstract",
+    "acronym": "AMI",
+    "normalized_acronym": "ami",
+    "expansion": "amiodarone",
+    "normalized_expansion": "amiodarone",
+    "entity_type": "Chemical",
+    "mesh_id": "D000638"
+  },
+  {
+    "doc_id": "11334364",
+    "passage_type": "abstract",
+    "acronym": "AMI",
+    "normalized_acronym": "ami",
+    "expansion": "amiodarone",
+    "normalized_expansion": "amiodarone",
+    "entity_type": "Chemical",
+    "mesh_id": "D000638"
+  },
+  {
+    "doc_id": "12684739",
+    "passage_type": "abstract",
+    "acronym": "GVG",
+    "normalized_acronym": "gvg",
+    "expansion": "gamma-Vinyl GABA",
+    "normalized_expansion": "gamma-vinyl gaba",
+    "entity_type": "Chemical",
+    "mesh_id": "D020888"
+  },
+  {
+    "doc_id": "12684739",
+    "passage_type": "abstract",
+    "acronym": "GVG",
+    "normalized_acronym": "gvg",
+    "expansion": "gamma-Vinyl GABA",
+    "normalized_expansion": "gamma-vinyl gaba",
+    "entity_type": "Chemical",
+    "mesh_id": "D020888"
+  },
+  {
+    "doc_id": "12684739",
+    "passage_type": "abstract",
+    "acronym": "DA",
+    "normalized_acronym": "da",
+    "expansion": "dopamine",
+    "normalized_expansion": "dopamine",
+    "entity_type": "Chemical",
+    "mesh_id": "D004298"
+  },
+  {
+    "doc_id": "12684739",
+    "passage_type": "abstract",
+    "acronym": "DA",
+    "normalized_acronym": "da",
+    "expansion": "dopamine",
+    "normalized_expansion": "dopamine",
+    "entity_type": "Chemical",
+    "mesh_id": "D004298"
+  },
+  {
+    "doc_id": "18221780",
+    "passage_type": "abstract",
+    "acronym": "NMDA",
+    "normalized_acronym": "nmda",
+    "expansion": "N-methyl-D-aspartate",
+    "normalized_expansion": "n-methyl-d-aspartate",
+    "entity_type": "Chemical",
+    "mesh_id": "D016202"
+  },
+  {
+    "doc_id": "18410508",
+    "passage_type": "abstract",
+    "acronym": "METH",
+    "normalized_acronym": "meth",
+    "expansion": "Methamphetamine",
+    "normalized_expansion": "methamphetamine",
+    "entity_type": "Chemical",
+    "mesh_id": "D008694"
+  },
+  {
+    "doc_id": "18410508",
+    "passage_type": "abstract",
+    "acronym": "METH",
+    "normalized_acronym": "meth",
+    "expansion": "Methamphetamine",
+    "normalized_expansion": "methamphetamine",
+    "entity_type": "Chemical",
+    "mesh_id": "D008694"
+  },
+  {
+    "doc_id": "19299179",
+    "passage_type": "abstract",
+    "acronym": "PCP",
+    "normalized_acronym": "pcp",
+    "expansion": "Pneumocystis pneumonia",
+    "normalized_expansion": "pneumocystis pneumonia",
+    "entity_type": "Disease",
+    "mesh_id": "D011020"
+  },
+  {
+    "doc_id": "20084309",
+    "passage_type": "abstract",
+    "acronym": "MP",
+    "normalized_acronym": "mp",
+    "expansion": "myocardiopathy",
+    "normalized_expansion": "myocardiopathy",
+    "entity_type": "Disease",
+    "mesh_id": "D009202"
+  },
+  {
+    "doc_id": "20084309",
+    "passage_type": "abstract",
+    "acronym": "MR",
+    "normalized_acronym": "mr",
+    "expansion": "mitral regurgitation",
+    "normalized_expansion": "mitral regurgitation",
+    "entity_type": "Disease",
+    "mesh_id": "D008944"
+  },
+  {
+    "doc_id": "9660111",
+    "passage_type": "abstract",
+    "acronym": "TRI",
+    "normalized_acronym": "tri",
+    "expansion": "Trimipramine",
+    "normalized_expansion": "trimipramine",
+    "entity_type": "Chemical",
+    "mesh_id": "D014299"
+  },
+  {
+    "doc_id": "9660111",
+    "passage_type": "abstract",
+    "acronym": "TRI",
+    "normalized_acronym": "tri",
+    "expansion": "Trimipramine",
+    "normalized_expansion": "trimipramine",
+    "entity_type": "Chemical",
+    "mesh_id": "D014299"
+  },
+  {
+    "doc_id": "11532387",
+    "passage_type": "abstract",
+    "acronym": "RS",
+    "normalized_acronym": "rs",
+    "expansion": "Rabbit syndrome",
+    "normalized_expansion": "rabbit syndrome",
+    "entity_type": "Disease",
+    "mesh_id": "D001480"
+  },
+  {
+    "doc_id": "11532387",
+    "passage_type": "abstract",
+    "acronym": "RS",
+    "normalized_acronym": "rs",
+    "expansion": "Rabbit syndrome",
+    "normalized_expansion": "rabbit syndrome",
+    "entity_type": "Disease",
+    "mesh_id": "D001480"
+  },
+  {
+    "doc_id": "16787750",
+    "passage_type": "abstract",
+    "acronym": "VPA",
+    "normalized_acronym": "vpa",
+    "expansion": "Valproic acid",
+    "normalized_expansion": "valproic acid",
+    "entity_type": "Chemical",
+    "mesh_id": "D014635"
+  },
+  {
+    "doc_id": "16787750",
+    "passage_type": "abstract",
+    "acronym": "VPA",
+    "normalized_acronym": "vpa",
+    "expansion": "Valproic acid",
+    "normalized_expansion": "valproic acid",
+    "entity_type": "Chemical",
+    "mesh_id": "D014635"
+  },
+  {
+    "doc_id": "12090760",
+    "passage_type": "abstract",
+    "acronym": "AZT",
+    "normalized_acronym": "azt",
+    "expansion": "Azidothymidine",
+    "normalized_expansion": "azidothymidine",
+    "entity_type": "Chemical",
+    "mesh_id": "D015215"
+  },
+  {
+    "doc_id": "12090760",
+    "passage_type": "abstract",
+    "acronym": "AZT",
+    "normalized_acronym": "azt",
+    "expansion": "Azidothymidine",
+    "normalized_expansion": "azidothymidine",
+    "entity_type": "Chemical",
+    "mesh_id": "D015215"
+  },
+  {
+    "doc_id": "11279304",
+    "passage_type": "abstract",
+    "acronym": "DNR",
+    "normalized_acronym": "dnr",
+    "expansion": "daunorubicin",
+    "normalized_expansion": "daunorubicin",
+    "entity_type": "Chemical",
+    "mesh_id": "D003630"
+  },
+  {
+    "doc_id": "2440413",
+    "passage_type": "abstract",
+    "acronym": "BCC",
+    "normalized_acronym": "bcc",
+    "expansion": "bicuculline",
+    "normalized_expansion": "bicuculline",
+    "entity_type": "Chemical",
+    "mesh_id": "D001640"
+  },
+  {
+    "doc_id": "15957009",
+    "passage_type": "abstract",
+    "acronym": "TRP",
+    "normalized_acronym": "trp",
+    "expansion": "tryptophan",
+    "normalized_expansion": "tryptophan",
+    "entity_type": "Chemical",
+    "mesh_id": "D014364"
+  },
+  {
+    "doc_id": "12584269",
+    "passage_type": "abstract",
+    "acronym": "FK506",
+    "normalized_acronym": "fk506",
+    "expansion": "tacrolimus",
+    "normalized_expansion": "tacrolimus",
+    "entity_type": "Chemical",
+    "mesh_id": "D016559"
+  },
+  {
+    "doc_id": "12584269",
+    "passage_type": "abstract",
+    "acronym": "FK506",
+    "normalized_acronym": "fk506",
+    "expansion": "tacrolimus",
+    "normalized_expansion": "tacrolimus",
+    "entity_type": "Chemical",
+    "mesh_id": "D016559"
+  },
+  {
+    "doc_id": "20080419",
+    "passage_type": "abstract",
+    "acronym": "SRS",
+    "normalized_acronym": "srs",
+    "expansion": "Spontaneous recurrent seizures",
+    "normalized_expansion": "spontaneous recurrent seizures",
+    "entity_type": "Disease",
+    "mesh_id": "-1"
+  },
+  {
+    "doc_id": "18439803",
+    "passage_type": "abstract",
+    "acronym": "VPU",
+    "normalized_acronym": "vpu",
+    "expansion": "urea",
+    "normalized_expansion": "urea",
+    "entity_type": "Chemical",
+    "mesh_id": "C108761"
+  },
+  {
+    "doc_id": "11773892",
+    "passage_type": "title",
+    "acronym": "ESRD",
+    "normalized_acronym": "esrd",
+    "expansion": "End-stage renal disease",
+    "normalized_expansion": "end-stage renal disease",
+    "entity_type": "Disease",
+    "mesh_id": "D007676"
+  },
+  {
+    "doc_id": "11773892",
+    "passage_type": "title",
+    "acronym": "ESRD",
+    "normalized_acronym": "esrd",
+    "expansion": "End-stage renal disease",
+    "normalized_expansion": "end-stage renal disease",
+    "entity_type": "Disease",
+    "mesh_id": "D007676"
+  },
+  {
+    "doc_id": "1592014",
+    "passage_type": "abstract",
+    "acronym": "BE",
+    "normalized_acronym": "be",
+    "expansion": "benzoylecgonine",
+    "normalized_expansion": "benzoylecgonine",
+    "entity_type": "Chemical",
+    "mesh_id": "C005618"
+  },
+  {
+    "doc_id": "19767176",
+    "passage_type": "abstract",
+    "acronym": "PDTC",
+    "normalized_acronym": "pdtc",
+    "expansion": "Pyrrolidine dithiocarbamate",
+    "normalized_expansion": "pyrrolidine dithiocarbamate",
+    "entity_type": "Chemical",
+    "mesh_id": "C020972"
+  },
+  {
+    "doc_id": "2870085",
+    "passage_type": "abstract",
+    "acronym": "ACC-9089",
+    "normalized_acronym": "acc-9089",
+    "expansion": "Flestolol",
+    "normalized_expansion": "flestolol",
+    "entity_type": "Chemical",
+    "mesh_id": "C047847"
+  },
+  {
+    "doc_id": "2870085",
+    "passage_type": "abstract",
+    "acronym": "ACC-9089",
+    "normalized_acronym": "acc-9089",
+    "expansion": "Flestolol",
+    "normalized_expansion": "flestolol",
+    "entity_type": "Chemical",
+    "mesh_id": "C047847"
+  },
+  {
+    "doc_id": "1527456",
+    "passage_type": "abstract",
+    "acronym": "IST",
+    "normalized_acronym": "ist",
+    "expansion": "Idiopathic subjective tinnitus",
+    "normalized_expansion": "idiopathic subjective tinnitus",
+    "entity_type": "Disease",
+    "mesh_id": "D014012"
+  },
+  {
+    "doc_id": "20067456",
+    "passage_type": "abstract",
+    "acronym": "SSRI",
+    "normalized_acronym": "ssri",
+    "expansion": "selective serotonin reuptake inhibitor",
+    "normalized_expansion": "selective serotonin reuptake inhibitor",
+    "entity_type": "Chemical",
+    "mesh_id": "D017367"
+  }
+]
