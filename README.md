@@ -1,6 +1,6 @@
 # Reliable Clinical Text Harmonization
 
-**Version:** 0.4.0  
+**Version:** 0.4.1  
 **Status:** Active research prototype  
 **Last updated:** 2026-10-13
 
@@ -74,29 +74,62 @@ The generated dashboard is local output and is not committed.
 
 ## Verified Results
 
-### Extraction: EXP-004
+### Extraction: EXP-009 word-boundary strategy
 
-EXP-004 evaluates the current dictionary extractor against BC5CDR test-set gold entity locations.
+EXP-009 evaluated lexical matching strategies for dictionary extraction. Its word-boundary strategy is the extraction strategy used by the active EXP-010 pipeline.
 
 | Metric | Result |
 |---|---:|
 | Gold entities | 9,956 |
-| Predicted entities | 11,476 |
+| Extracted occurrences | 6,338 |
+| Unique mentions | 5,616 |
 | True positives | 8,821 |
 | Precision | 0.8861 |
 | Recall | 0.5641 |
 | F1 | 0.6893 |
 
-This result uses the EXP-004 gold-entity denominator and evaluation policy. It should not be silently merged with earlier Gate C-2 results, which used 9,965 location-level gold spans and a different dictionary extractor configuration.
+**Correction:** an earlier version of this documentation incorrectly attributed these metrics to EXP-004. EXP-004 was the PubMedBERT tiny-overfit preflight, not a dictionary extraction evaluation. The metrics belong to EXP-009’s word-boundary strategy.
 
-### Alternative extractor: EXP-005
+### Verified base-dictionary baseline: EXP-008
+
+EXP-008 evaluated the base BC5CDR training dictionary on the test set using location-level, type-aware exact-span matching.
+
+| Metric | Result |
+|---|---:|
+| Gold entities | 9,956 |
+| Predicted entities | 7,038 |
+| True positives | 5,617 |
+| False positives | 1,421 |
+| False negatives | 4,339 |
+| Precision | 0.7981 |
+| Recall | 0.5642 |
+| F1 | 0.6611 |
+
+| Entity type | Precision | Recall | F1 |
+|---|---:|---:|---:|
+| Chemicals | 0.8103 | 0.5380 | 0.6466 |
+| Diseases | 0.7855 | 0.5952 | 0.6772 |
+
+### Alternative extractor: EXP-007 PubMedBERT
 
 | Extractor | Precision | Recall | F1 |
 |---|---:|---:|---:|
-| Dictionary extractor | 0.8861 | 0.5641 | 0.6893 |
+| EXP-009 word-boundary dictionary | 0.8861 | 0.5641 | 0.6893 |
 | PubMedBERT epoch 3 | 0.5475 | 0.7322 | 0.6265 |
 
-PubMedBERT improves recall but reduces precision. The dictionary extractor remains the production extractor because it is deterministic, auditable, and better aligned with controlled-vocabulary mapping.
+PubMedBERT improves recall but reduces precision. The dictionary word-boundary extractor remains the production extractor because it is deterministic, auditable, and better aligned with controlled-vocabulary mapping.
+
+### Abbreviation expansion: evaluated negative result
+
+Abbreviation expansion was evaluated on the BC5CDR development set. It slightly improved recall but substantially reduced precision and F1.
+
+| Metric | Base dictionary | Expanded dictionary | Difference |
+|---|---:|---:|---:|
+| Precision | 0.8158 | 0.7390 | -0.0768 |
+| Recall | 0.5847 | 0.5934 | +0.0088 |
+| F1 | 0.6812 | 0.6583 | -0.0229 |
+
+The expanded dictionary is retained as provenance and an evaluated negative result. It is not the production extractor.
 
 ### Harmonization: EXP-010
 
@@ -135,13 +168,14 @@ A mapped record is gold-supported when its document-level span and entity type m
 
 ## Historical Corrections
 
-The project has retained earlier invalid and superseded results as provenance.
+The project retains earlier invalid, superseded, and misattributed results as provenance.
 
 | Result | Status | Reason |
 |---|---|---|
 | Dictionary F1 = 0.0966 | INVALID | Document-global gold offsets were compared with passage-local predicted offsets. |
 | Dictionary F1 = 0.6614 | SUPERSEDED | Used one-location gold representation and type-blind matching. |
-| Gate C-2 dictionary F1 = 0.6611 | Historical baseline | Location-level, type-aware evaluation; different extractor configuration from EXP-004. |
+| Gate C-2 dictionary F1 = 0.6611 | Historical baseline | Location-level, type-aware evaluation of the base dictionary. |
+| EXP-004 dictionary extraction claim | MISATTRIBUTED | EXP-004 was the PubMedBERT tiny-overfit preflight; the 0.6893 F1 result belongs to EXP-009. |
 | End-to-end survival = 7.9% | INVALID AS CORRECTNESS | Raw count ratio; no gold-to-standardized-concept verification. |
 
 Historical results are retained to document how evaluation errors were found and corrected. They must not be cited as current performance.
@@ -174,7 +208,9 @@ pip install -r requirements.txt
 | Dataset | Source | License | Location | Status |
 |---|---|---|---|---|
 | BC5CDR | BioCreative V CDR | CC-BY 3.0 | `data/raw/bc5cdr/CDR_Data/CDR.Corpus.v010516/` | Downloaded |
-| Controlled harmonization vocabulary | Project-defined | Project artifact | `src/harmonization/` | Implemented |
+| Base BC5CDR dictionary | Project-defined | Project artifact | `data/terminology/bc5cdr_dictionary.json` | Implemented |
+| Abbreviation-expanded dictionary | Project-defined | Project artifact | `data/terminology/bc5cdr_dictionary_abbreviation_expanded.json` | Evaluated negative result |
+| Controlled harmonization vocabulary | Project-defined | Project artifact | `data/terminology/omop_exercise_vocabulary.json` | Implemented |
 | SNOMED CT | IHTSDO | IHTSDO license | `data/terminology/snomed/` | Not used by EXP-010 |
 | ICD-10-CM | CDC/NCHS | Public domain | `data/terminology/icd10cm/` | Not used by EXP-010 |
 | RxNorm | NLM | Public domain | `data/terminology/rxnorm/` | Not used by EXP-010 |
@@ -203,10 +239,10 @@ Run the active harmonization pipeline:
 python src/pipeline/run_pipeline.py
 ```
 
-Evaluate the current dictionary extractor:
+Evaluate the base dictionary extractor:
 
 ```bash
-python src/evaluation/evaluate_ner.py
+python src/ner/evaluate_dictionary_exp008.py
 ```
 
 Evaluate mapping quality:
@@ -235,6 +271,7 @@ output/dashboard/clinical_harmonization_dashboard.html
 output/harmonization/exp010/harmonized_records.csv
 output/harmonization/exp010/mapped_records.csv
 output/harmonization/exp010/unmapped_mentions.csv
+output/evaluation/exp008_dictionary_bc5cdr_test_location_level.json
 output/evaluation/exp011_mapping_quality.json
 output/dashboard/clinical_harmonization_dashboard.html
 ```
@@ -249,7 +286,8 @@ This is a research prototype, not a validated clinical system.
 
 The current results support claims about:
 
-- dictionary extraction performance on BC5CDR under the EXP-004 policy;
+- word-boundary dictionary extraction performance on BC5CDR under the EXP-009 policy;
+- base-dictionary extraction performance under the EXP-008 policy;
 - controlled-vocabulary mapping coverage;
 - mapping precision and vocabulary recall for produced mappings;
 - domain-safe routing behavior;
@@ -270,8 +308,8 @@ They do **not** establish:
 ## Documentation
 
 - `MANIFEST.md` — data, script, experiment, and provenance register
-- `PROJECT_PROVENANCE.md` — environment, dependencies, constraints, and AI-assistance provenance
-- `PROJECT_STATE_REGISTER.md` — canonical current-state register
+- `.llm-provenance.md` — environment, dependencies, constraints, and AI-assistance provenance
+- `docs/PROJECT_STATE.md` — canonical current-state register
 - `docs/PROJECT_CLOSEOUT.md` — closeout summary and claims boundary
 - `docs/sessions/` — session logs
 - `docs/decisions/` — architecture decision records

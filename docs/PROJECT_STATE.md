@@ -272,6 +272,149 @@ load_bc5cdr()
 **Scope:** All metric reporting and documentation.
 
 ---
+## Result register
+
+### R-001: Historical dictionary NER F1
+
+- **Value:** 0.0966
+- **Status:** INVALID
+- **Reason:** Compared document-global gold offsets with passage-local predicted offsets.
+- **Action:** Do not cite as project performance.
+
+### R-002: One-location dictionary NER F1
+
+- **Value:** 0.6614
+- **Precision:** 0.7970
+- **Recall:** 0.5653
+- **Status:** SUPERSEDED
+- **Limitation:** Used first BioC location only and excluded entity type from matching.
+- **Action:** Retain as historical provenance.
+
+### R-003: Linking coverage
+
+- **Value:** 785 linked / 7,038 predictions = 11.15%
+- **Status:** PROTOTYPE COVERAGE, NOT LINKING ACCURACY
+- **Action:** Do not describe as linking accuracy or correctness.
+
+### R-004: OMOP routing and FHIR conversion
+
+- **Values:** 785 routed / 785 linked = 100%; 785 FHIR resources / 785 OMOP records = 100%
+- **Status:** FUNCTION PASS-THROUGH COUNTS
+- **Action:** Do not describe as standards compliance or clinical validity.
+
+### R-005: End-to-end survival
+
+- **Value:** 7.9%
+- **Status:** INVALID AS A CORRECTNESS METRIC
+- **Reason:** Raw count ratio; no gold-to-standardized-concept verification.
+- **Action:** Do not cite as end-to-end accuracy.
+
+### R-006: Gate C-2 base-dictionary baseline
+
+- **Value:** F1 0.6611
+- **Precision:** 0.7981
+- **Recall:** 0.5642
+- **Status:** Historical baseline; retained as provenance
+- **Date:** 2026-10-10
+- **Gold denominator:** 9,965 location-level gold spans
+- **Predicted entities:** 7,038
+- **Matching:** Exact document ID, passage type, passage-local offset, location length, and entity type
+- **Evidence:** `output/evaluation/evaluate_ner_gate_c2_2026-10-10.txt`
+
+### R-007: EXP-008 base-dictionary test evaluation
+
+- **Value:** F1 0.6611
+- **Precision:** 0.7981
+- **Recall:** 0.5642
+- **Status:** CURRENT verified base-dictionary test-set baseline
+- **Date:** 2026-10-12
+- **Dictionary:** `data/terminology/bc5cdr_dictionary.json`
+- **Gold denominator:** 9,956 location-level gold entities
+- **Predicted entities:** 7,038
+- **True positives:** 5,617
+- **False positives:** 1,421
+- **False negatives:** 4,339
+- **Evidence:** `output/evaluation/exp008_dictionary_bc5cdr_test_location_level.json`
+
+### R-008: EXP-009 word-boundary extraction
+
+- **Value:** F1 0.6893
+- **Precision:** 0.8861
+- **Recall:** 0.5641
+- **Status:** CURRENT extraction strategy used by EXP-010
+- **Gold denominator:** 9,956 gold entities
+- **Extracted occurrences:** 6,338
+- **Unique mentions:** 5,616
+- **True positives:** 8,821
+- **Evidence:** `docs/experiments/EXP-009-lexical-strategy-upgrade.md`
+- **Attribution correction:** Previously misattributed to EXP-004. EXP-004 was the PubMedBERT tiny-overfit preflight.
+
+### R-009: EXP-007 PubMedBERT epoch-3 evaluation
+
+- **Value:** F1 0.6265
+- **Precision:** 0.5475
+- **Recall:** 0.7322
+- **Status:** Evaluated alternative; not production extractor
+- **Gold denominator:** 9,956 gold entities
+- **Predicted entities:** 13,316
+- **Evidence:** `output/evaluation/exp007_pubmedbert_bc5cdr_test_epoch3.json`
+
+### R-010: Abbreviation-expanded dictionary
+
+- **Development F1:** 0.6583
+- **Development precision:** 0.7390
+- **Development recall:** 0.5934
+- **Status:** EVALUATED NEGATIVE RESULT
+- **Comparison:** Base dictionary achieved F1 0.6812 on the same development policy.
+- **Interpretation:** Expansion added 846 predictions, gained 86 true positives, and introduced 760 false positives.
+- **Action:** Retain as provenance; do not use as production extractor.
+
+### R-011: EXP-010 harmonization and routing
+
+- **Extracted occurrences:** 6,338
+- **Mapped:** 651
+- **Unmapped:** 5,687
+- **Vocabulary coverage:** 10.3%
+- **`drug_exposure`:** 371
+- **`condition_occurrence`:** 280
+- **Not routed:** 5,687
+- **Status:** CURRENT
+- **Scope limitation:** Coverage reflects the intentionally incomplete 29-concept vocabulary.
+
+### R-012: EXP-011 mapping quality
+
+- **Mapped records:** 651
+- **Gold-supported mappings:** 629
+- **Unsupported mappings:** 22
+- **Mapping precision:** 0.9662
+- **Vocabulary-representable gold entities:** 647
+- **Vocabulary-representable mapped entities:** 629
+- **Vocabulary recall:** 0.9722
+- **Status:** CURRENT
+- **Evidence:** `output/evaluation/exp011_mapping_quality.json`
+
+---
+
+## Documentation reconciliation
+
+| Document claim | Verified reality | Required action |
+|---|---|---|
+| EXP-004 produced dictionary F1 0.6893 | EXP-004 was PubMedBERT tiny-overfit preflight | Corrected; result belongs to EXP-009 |
+| EXP-004 gold denominator was 9,956 | No EXP-004 dictionary evaluation exists | Remove attribution; use EXP-008/EXP-009 evidence |
+| Abbreviation expansion improves extraction | It reduced development F1 | Record as evaluated negative result |
+| Base dictionary F1 0.6611 | Verified by EXP-008 on 9,956 test gold entities | Current verified base-dictionary baseline |
+| Word-boundary F1 0.6893 | Verified by EXP-009 | Current extraction strategy used by EXP-010 |
+
+---
+
+## Next gated actions
+
+1. Confirm the exact column definitions and evaluation population in `docs/experiments/EXP-009-lexical-strategy-upgrade.md`.
+2. Treat EXP-008 as the verified base-dictionary test baseline.
+3. Treat EXP-009 word-boundary matching as the current extraction strategy, subject to the EXP-009 record’s stated evaluation policy.
+4. Build EXP-012 from the base dictionary and PubMedBERT epoch-3 checkpoint; do not use the unverified former EXP-004 attribution as a baseline.
+5. Regenerate or export predictions under a single document-level offset convention before hybrid evaluation.
+6. Do not make semantic linking, OMOP-validity, FHIR-conformance, or end-to-end correctness claims without new per-mention evaluation evidence.
 
 ## 9. Next gated actions
 
@@ -307,16 +450,41 @@ load_bc5cdr()
 - Dictionary baseline rerun under Gate C-2 policy: F1 0.6611 on 9,965 location-level gold spans.
 - Eight focused regression tests pass.
 
-### Next gated actions
 
-1. Decide whether to regenerate `error_decomposition.json` and downstream dashboard artifacts under the Gate C-2 evaluation policy.
-2. Reconcile `MANIFEST.md` and `docs/evaluation_protocol.md` with the implemented state.
-3. Decide the committed status of `src/evaluation/dashboard.py`; it remains untracked.
-4. Treat transformer work as blocked until model access, tokenizer alignment, and training prerequisites are separately verified.
-5. Do not make semantic linking, OMOP-validity, FHIR-conformance, or end-to-end correctness claims without new per-mention evaluation evidence.
-6. Reconcile the EXP-004 gold denominator of 9,956 with the Gate C-2 location-level denominator of 9,965. Document whether the difference arises from deduplication, invalid-span filtering, or a different gold-construction policy before comparing R-006 and R-007.
 ### Blocked / out of scope
 
 - `evaluate_transformer.py`: broken imports and incompatible `doc.all_entities` interface; remains blocked.
 - Transformer training, model access, tokenizer alignment, and training-run validation: separate gates.
 - Dashboard staging/committing: separate decision; remains untracked.
+
+### Current verified dictionary result: EXP-008
+
+**Status:** CURRENT verified dictionary baseline  
+**Dictionary:** `data/terminology/bc5cdr_dictionary.json`  
+**Gold entities:** 9,956  
+**Predicted entities:** 7,038  
+**Precision:** 0.7981  
+**Recall:** 0.5642  
+**F1:** 0.6611  
+**Matching:** Exact document-level character span and entity type  
+**Gold policy:** One entity per BioC annotation location
+
+### Unverified historical claim: EXP-004
+
+A previously recorded result attributed to EXP-004 reported 11,476 predictions, precision 0.8861, recall 0.5641, and F1 0.6893.
+
+This result is not currently reproducible from the retained evaluation artifacts. It does not match EXP-008, which uses the base dictionary and produces 7,038 predictions, nor the abbreviation-expanded dictionary, which produces 7,867 predictions on the development set and reduces F1.
+
+**Status:** PROVENANCE UNKNOWN; DO NOT CITE until its extractor configuration, dictionary, and evaluation run are identified or reproduced.
+
+### Abbreviation expansion: EXP-D2
+
+Abbreviation expansion increased recall slightly but substantially reduced precision and F1 on the BC5CDR development set.
+
+| Metric | Base dictionary | Expanded dictionary | Difference |
+|---|---:|---:|---:|
+| Precision | 0.8158 | 0.7390 | -0.0768 |
+| Recall | 0.5847 | 0.5934 | +0.0088 |
+| F1 | 0.6812 | 0.6583 | -0.0229 |
+
+The expanded dictionary is retained as an evaluated negative result, not as the production extractor.
