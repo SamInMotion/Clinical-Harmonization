@@ -1,7 +1,7 @@
 # EXP-013: Confidence-Thresholded Hybrid Extraction
 
 **Date:** 2026-10-13  
-**Status:** Completed initial sweep  
+**Status:** Complete; exploratory test-set model selection  
 **Input:** BC5CDR test set  
 **Dictionary baseline:** EXP-008 base dictionary  
 **Transformer alternative:** EXP-007 PubMedBERT epoch-3 checkpoint  
@@ -46,10 +46,16 @@ Confidence is the maximum probability assigned to the predicted class among toke
 
 ## Decision
 
-Select **threshold 0.95** as the F1-optimal hybrid candidate and **threshold 0.97** as the precision-preserving candidate.
+EXP-013 is an exploratory test-set threshold sweep. Its thresholds were selected by comparing F1 across thresholds on the same BC5CDR test set used for reporting.
 
-Do not promote either variant to the production pipeline yet. EXP-014 must analyze the false positives introduced by the hybrid before deciding whether the precision trade-off is acceptable.
+Therefore, threshold 0.95 and threshold 0.97 are exploratory, test-informed candidates. They are **not independently selected operating points** and must not be presented as final hybrid results.
+
+EXP-014A subsequently selected threshold 0.95 using the BC5CDR development set only and evaluated the frozen configuration once on the untouched test set. EXP-014A is the authoritative hybrid evaluation.
+
+Do not promote either EXP-013 candidate to the production pipeline. EXP-014B must analyze the false positives introduced by the frozen hybrid before deciding whether the precision trade-off is acceptable.
 
 ## Claims boundary
 
-EXP-013 establishes evaluated hybrid operating points on BC5CDR. It does not establish clinical correctness, OMOP validity, FHIR conformance, deployment readiness, or generalization beyond BC5CDR.
+EXP-013 establishes an exploratory sensitivity analysis of confidence-thresholded hybrid extraction on the BC5CDR test set. It does not establish an independently selected operating point, production readiness, clinical correctness, OMOP validity, FHIR conformance, or generalization beyond BC5CDR.
+
+The authoritative frozen hybrid result is provided by EXP-014A.

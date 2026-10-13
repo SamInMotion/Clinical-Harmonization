@@ -1,6 +1,6 @@
 # MANIFEST — Clinical Harmonization Project
 
-**Version:** 0.4.1  
+**Version:** 0.5.0  
 **Created:** 2026-10-07  
 **Last updated:** 2026-10-13  
 
@@ -14,10 +14,19 @@ The active implementation is EXP-010, evaluated by EXP-011.
 - Verified base-dictionary test baseline: EXP-008.
 - Active harmonization vocabulary: 29 concepts (17 drugs, 12 conditions).
 - Active pipeline output: 6,338 extracted occurrences; 651 mapped; 5,687 unmapped.
+- Mapping rate over extracted occurrences: 10.3%.
 - EXP-009 word-boundary extraction: precision 0.8861, recall 0.5641, F1 0.6893.
 - EXP-008 base-dictionary extraction: precision 0.7981, recall 0.5642, F1 0.6611.
-- Current mapping result: precision 0.9662; vocabulary recall 0.9722.
+- Current mapping result: mapping precision 0.9662; vocabulary recall 0.9722.
 - Dashboard: implemented at `src/pipeline/build_dashboard.py`; generated HTML remains uncommitted.
+
+The current authoritative hybrid result is EXP-014A:
+
+- Threshold selected on BC5CDR development set only: 0.95.
+- Frozen hybrid test result: P 0.7609, R 0.7719, F1 0.7664.
+- The hybrid is not promoted to production pending EXP-014B false-positive analysis.
+
+EXP-013 remains an exploratory test-set threshold sweep. Its results must not be presented as independently selected operating points.
 
 **Attribution correction:** EXP-004 was the PubMedBERT tiny-overfit preflight. It did not produce a dictionary extraction result. Earlier documentation incorrectly attributed the EXP-009 word-boundary result to EXP-004.
 
@@ -29,15 +38,15 @@ Earlier E01–E06 entries and historical results remain provenance. They are not
 
 | ID | Source | Description | License | Location | Status |
 |----|--------|-------------|---------|----------|--------|
-| D01 | BioCreative V CDR | BC5CDR corpus (1,500 PubMed abstracts, chemical/disease annotations) | CC-BY 3.0 | `data/raw/bc5cdr/CDR_Data/CDR.Corpus.v010516/` | Downloaded |
+| D01 | BioCreative V CDR | BC5CDR corpus (1,500 PubMed abstracts, chemical/disease annotations) | CC-BY 3.0 | `data/raw/bc5cdr/CDR_Data/CDR.Corpus.v010516/` | Downloaded locally; not committed |
 | D02 | SNOMED-CT | Clinical terminology | IHTSDO | `data/terminology/snomed/` | Not used by EXP-010 |
 | D03 | ICD-10-CM | Diagnosis codes | CDC/NCHS | `data/terminology/icd10cm/` | Not used by EXP-010 |
 | D04 | RxNorm | Drug terminology | NLM | `data/terminology/rxnorm/` | Not used by EXP-010 |
 | D05 | LOINC | Laboratory terminology | Regenstrief | `data/terminology/loinc/` | Not used by EXP-010 |
 | D06 | Synthetic FHIR | Synthetic patient records | Generated | `data/synthetic_fhir/` | Not created |
-| D07 | Base BC5CDR dictionary | Dictionary built from BC5CDR training annotations | Project artifact | `data/terminology/bc5cdr_dictionary.json` | Implemented |
-| D08 | Abbreviation-expanded dictionary | Base dictionary plus training-derived acronym aliases | Project artifact | `data/terminology/bc5cdr_dictionary_abbreviation_expanded.json` | Evaluated negative result |
-| D09 | OMOP exercise vocabulary | 29-concept controlled vocabulary | Project artifact | `data/terminology/omop_exercise_vocabulary.json` | Implemented |
+| D07 | Base BC5CDR dictionary | Dictionary built from BC5CDR training annotations | Project artifact; redistribution status to confirm | `data/terminology/bc5cdr_dictionary.json` | Implemented |
+| D08 | Abbreviation-expanded dictionary | Base dictionary plus training-derived acronym aliases | Project artifact; redistribution status to confirm | `data/terminology/bc5cdr_dictionary_abbreviation_expanded.json` | Evaluated negative result |
+| D09 | OMOP exercise vocabulary | 29-concept controlled vocabulary | Assessment-supplied; redistribution status unverified | `data/terminology/omop_exercise_vocabulary.json` | Implemented; release audit required |
 
 ---
 
@@ -45,9 +54,9 @@ Earlier E01–E06 entries and historical results remain provenance. They are not
 
 | ID | Document | Purpose | Status |
 |----|----------|---------|--------|
-| DOC01 | `docs/PROJECT_CLOSEOUT.md` | Project closeout and claims boundary | Created |
-| DOC02 | `docs/PROJECT_STATE.md` | Canonical current-state register | Updated |
-| DOC03 | `docs/experiments/` | Experiment records and provenance | Updated |
+| DOC01 | `docs/PROJECT_CLOSEOUT.md` | Project closeout and claims boundary | Requires update to EXP-014A |
+| DOC02 | `docs/PROJECT_STATE.md` | Canonical current-state register | Requires update to EXP-014A |
+| DOC03 | `docs/experiments/` | Experiment records and provenance | Requires EXP-014A record |
 | DOC04 | `docs/sessions/` | Session logs | Updated |
 | DOC05 | `docs/decisions/` | Architecture decision records | Partial |
 | DOC06 | `docs/architecture.md` | Pipeline architecture and data flow | Not created |
@@ -76,7 +85,12 @@ Earlier E01–E06 entries and historical results remain provenance. They are not
 | S14 | `src/evaluation/inspect_unsupported_mappings.py` | Inspect unsupported mapping records | Complete |
 | S15 | `src/pipeline/compare_exp009_exp010.py` | Compare EXP-009 and EXP-010 outputs | Complete |
 | S16 | `src/evaluation/error_decomposition.py` | Earlier error-decomposition workflow | Superseded for current reporting |
-| S17 | `src/evaluation/evaluate_hybrid_extraction.py` | EXP-012 hybrid extraction evaluation | Created; requires prediction-export integration |
+| S17 | `src/evaluation/export_exp012_predictions.py` | Export test-set gold, dictionary, and PubMedBERT predictions with confidence | Complete |
+| S18 | `src/evaluation/evaluate_hybrid_extraction.py` | EXP-012 unthresholded hybrid evaluation | Complete |
+| S19 | `src/evaluation/evaluate_hybrid_confidence.py` | EXP-013 exploratory test-set confidence-threshold sweep | Complete; exploratory |
+| S20 | `src/evaluation/export_exp014a_development_predictions.py` | Export development-set gold, dictionary, and PubMedBERT predictions with confidence | Complete |
+| S21 | `src/evaluation/evaluate_exp014a_development_threshold_sweep.py` | Development-only threshold selection | Complete |
+| S22 | `src/evaluation/evaluate_exp014a_frozen_test_hybrid.py` | Final frozen-threshold test evaluation | Complete |
 
 ---
 
@@ -98,7 +112,10 @@ Earlier E01–E06 entries and historical results remain provenance. They are not
 | EXP-009 | Lexical strategy comparison | Which lexical matching strategy best supports extraction? | Complete |
 | EXP-010 | Controlled harmonization and routing | How many mentions map, route, or remain unmapped? | Complete |
 | EXP-011 | Mapping-quality evaluation | Are produced mappings supported by gold spans, types, and controlled variants? | Complete |
-| EXP-012 | Hybrid extraction evaluation | Does adding non-overlapping transformer predictions improve the dictionary extractor? | In progress |
+| EXP-012 | Hybrid extraction evaluation | Does adding non-overlapping transformer predictions improve the dictionary extractor? | Complete |
+| EXP-013 | Confidence-threshold sweep | Can confidence filtering improve the hybrid precision-recall balance? | Complete; exploratory test-set model selection |
+| EXP-014A | Development threshold selection and frozen test evaluation | Can a hybrid threshold be selected without test-set leakage and evaluated once on test data? | Complete; authoritative hybrid evaluation |
+| EXP-014B | Hybrid false-positive analysis | Are the frozen hybrid’s added false positives understandable, bounded, and safe for downstream harmonization? | Not started |
 
 ---
 
@@ -112,7 +129,7 @@ The original dictionary NER result of **F1 = 0.0966 was INVALID**.
 - Predictions used passage-local offsets.
 - The evaluator compared these coordinate systems directly, producing systematic false negatives.
 
-The loader and evaluation logic were corrected so that gold annotations and predictions use consistent passage-local offsets. The invalid result is retained only as provenance.
+The loader and evaluation logic were corrected so that gold annotations and predictions use consistent document-level offsets in current export and hybrid evaluation workflows. The invalid result is retained only as provenance.
 
 ---
 
@@ -127,8 +144,6 @@ The extraction metrics below—
 - F1 0.6893—
 
 belong to **EXP-009’s word-boundary lexical strategy**, not EXP-004.
-
-Earlier documentation incorrectly labeled this as an EXP-004 result. The error is retained here as provenance and corrected throughout the repository documentation.
 
 ---
 
@@ -164,7 +179,7 @@ Earlier documentation incorrectly labeled this as an EXP-004 result. The error i
 **Strategy:** Dictionary word-boundary matching  
 **Gold denominator:** 9,956 gold entities  
 **Predicted entities:** 6,338  
-**Exact matches / true positives:** 5,616  
+**True positives:** 5,616  
 **False positives:** 722  
 **False negatives:** 4,340  
 
@@ -175,6 +190,7 @@ Earlier documentation incorrectly labeled this as an EXP-004 result. The error i
 | F1 | 0.6893 |
 
 Word-boundary matching removed 700 substring false positives and lost one true positive relative to substring matching.
+
 ---
 
 ### Alternative extractor: EXP-007 PubMedBERT
@@ -199,7 +215,7 @@ PubMedBERT improved recall but reduced precision. The dictionary word-boundary e
 **Status:** Evaluated negative result  
 **Dataset:** BC5CDR development set  
 **Gold spans:** 9,816  
-**Evaluation policy:** Gate C-2 location-level, type-aware exact-span matching
+**Evaluation policy:** Location-level, type-aware exact-span matching
 
 | Metric | Base dictionary | Expanded dictionary | Difference |
 |---|---:|---:|---:|
@@ -215,6 +231,61 @@ Abbreviation expansion is retained as provenance and an evaluated negative resul
 
 ---
 
+## Hybrid extraction results
+
+### EXP-012: unthresholded hybrid
+
+**Status:** Complete  
+**Input:** BC5CDR test set  
+**Rule:** Retain dictionary predictions; add non-overlapping same-type PubMedBERT predictions.
+
+| System | Predicted | TP | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|---:|
+| Base dictionary | 7,038 | 5,617 | 0.7981 | 0.5642 | 0.6611 |
+| PubMedBERT only | 13,316 | 7,290 | 0.5475 | 0.7322 | 0.6265 |
+| Hybrid union | 12,834 | 8,121 | 0.6328 | 0.8157 | 0.7127 |
+
+### EXP-013: exploratory test-set threshold sweep
+
+**Status:** Complete; exploratory test-set model selection  
+**Input:** BC5CDR test set  
+**Confidence:** Maximum predicted-class softmax probability among tokens overlapping the predicted span.
+
+| Threshold | PubMedBERT added | Precision | Recall | F1 |
+|---:|---:|---:|---:|---:|
+| Dictionary baseline | — | 0.7981 | 0.5642 | 0.6611 |
+| 0.90 | 3,876 | 0.7227 | 0.7923 | 0.7559 |
+| 0.95 | 3,062 | 0.7609 | 0.7719 | 0.7664 |
+| 0.97 | 2,307 | 0.7880 | 0.7397 | 0.7631 |
+| 0.98 | 1,756 | 0.8044 | 0.7105 | 0.7546 |
+| 0.99 | 945 | 0.8072 | 0.6472 | 0.7184 |
+
+Because the threshold was selected using test-set F1, EXP-013 does not provide an independent final estimate. It is retained as exploratory provenance.
+
+### EXP-014A: authoritative frozen hybrid evaluation
+
+**Status:** Complete; authoritative hybrid evaluation  
+**Threshold-selection split:** BC5CDR development set  
+**Final-evaluation split:** BC5CDR test set  
+**Frozen threshold:** 0.95  
+**Selection rule:** Maximum development F1; ties broken by higher precision.
+
+Development selection:
+
+| Threshold | PubMedBERT added | Precision | Recall | F1 |
+|---:|---:|---:|---:|---:|
+| **0.95** | **2,869** | **0.7660** | **0.7733** | **0.7696** |
+
+Final test evaluation:
+
+| System | Predicted | TP | FP | FN | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Dictionary | 7,038 | 5,617 | 1,421 | 4,339 | 0.7981 | 0.5642 | 0.6611 |
+| PubMedBERT epoch 3 | 13,316 | 7,290 | 6,026 | 2,666 | 0.5475 | 0.7322 | 0.6265 |
+| Frozen hybrid, threshold 0.95 | 10,100 | 7,685 | 2,415 | 2,271 | 0.7609 | 0.7719 | 0.7664 |
+
+---
+
 ## Harmonization and mapping results
 
 ### EXP-010: controlled harmonization and routing
@@ -222,12 +293,14 @@ Abbreviation expansion is retained as provenance and an evaluated negative resul
 | Measure | Result |
 |---|---:|
 | Extracted occurrences | 6,338 |
-| Mapped | 651 |
-| Unmapped | 5,687 |
-| Vocabulary coverage | 10.3% |
-| `drug_exposure` | 371 |
-| `condition_occurrence` | 280 |
+| Mapped occurrences | 651 |
+| Unmapped occurrences | 5,687 |
+| Mapping rate over extracted occurrences | 10.3% |
+| Routed to `drug_exposure` | 371 |
+| Routed to `condition_occurrence` | 280 |
 | Not routed | 5,687 |
+
+The 10.3% figure is a mapping rate over extracted occurrences, not vocabulary coverage or end-to-end correctness.
 
 ### EXP-011: mapping quality
 
@@ -240,6 +313,8 @@ Abbreviation expansion is retained as provenance and an evaluated negative resul
 | Vocabulary-representable gold entities | 647 |
 | Vocabulary-representable mapped entities | 629 |
 | Vocabulary recall | 0.9722 |
+
+Gold-supported means that the mapped record matches a gold entity’s document-level span and type, and its mapped concept matches the normalized gold mention or a controlled variant. This does not establish semantic equivalence to an OMOP concept.
 
 ---
 
@@ -284,12 +359,15 @@ Abbreviation expansion is retained as provenance and an evaluated negative resul
 - **P01:** BC5CDR downloaded from Hugging Face (`bigbio/bc5cdr`) on 2026-10-07.
 - **P02:** Base dictionary built from BC5CDR training-set annotations.
 - **P03:** Abbreviation aliases derived only from training-set text and annotations.
-- **P04:** Loader updated to preserve all BioC annotation locations and use passage-local offsets.
+- **P04:** Loader preserves all BioC annotation locations and distinguishes document-level from passage-local offsets.
 - **P05:** EXP-008 evaluates the base dictionary on 9,956 test-set gold entities.
 - **P06:** EXP-009 evaluates lexical strategies; its word-boundary strategy is used by EXP-010.
 - **P07:** Abbreviation expansion reduced development-set F1 and is retained as a negative result.
 - **P08:** No restricted clinical data will be committed to this repository.
 - **P09:** EXP-004 was a PubMedBERT tiny-overfit preflight, not a dictionary evaluation.
+- **P10:** EXP-013 selected its threshold on the BC5CDR test set and is therefore exploratory.
+- **P11:** EXP-014A selected threshold 0.95 on the development set and evaluated the frozen configuration once on the test set.
+- **P12:** Redistribution permissions for the assessment-supplied OMOP exercise vocabulary and BC5CDR-derived dictionaries require confirmation before public portfolio release.
 
 ---
 
@@ -297,19 +375,22 @@ Abbreviation expansion is retained as provenance and an evaluated negative resul
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| BC5CDR data downloaded | ✅ Complete | Corpus available at `data/raw/bc5cdr/CDR_Data/CDR.Corpus.v010516/`. |
+| BC5CDR data downloaded | ✅ Complete | Corpus available locally; raw corpus is not committed. |
 | Environment set up | ✅ Complete | `.venv/` exists; use `.venv/Scripts/python.exe` until shell activation is verified. |
-| BioC loader location handling | ✅ Complete | All annotation locations are preserved; passage-local conversion verified. |
-| Base-dictionary extraction | ✅ Complete | EXP-008: precision 0.7981, recall 0.5642, F1 0.6611. |
-| Word-boundary extraction | ✅ Complete | EXP-009: precision 0.8861, recall 0.5641, F1 0.6893. |
+| BioC loader location handling | ✅ Complete | All annotation locations are preserved; offset conventions documented. |
+| Base-dictionary extraction | ✅ Complete | EXP-008: P 0.7981, R 0.5642, F1 0.6611. |
+| Word-boundary extraction | ✅ Complete | EXP-009: P 0.8861, R 0.5641, F1 0.6893. |
 | Abbreviation expansion | ⚠️ Negative result | Improved recall slightly but reduced precision and F1 on development data. |
 | Transformer NER | ⚠️ Partially complete | EXP-007 evaluated PubMedBERT epoch 3; broader training and tokenizer-alignment validation remain separate work. |
 | Controlled harmonization | ✅ Complete | EXP-010: 6,338 occurrences; 651 mapped; 5,687 unmapped. |
 | Domain-safe routing | ✅ Complete | 371 `drug_exposure`; 280 `condition_occurrence`; Observation-domain concepts not routed. |
 | Mapping-quality evaluation | ✅ Complete | EXP-011: mapping precision 0.9662; vocabulary recall 0.9722. |
+| Hybrid extraction | ✅ Complete | EXP-012 complete; EXP-013 exploratory; EXP-014A authoritative frozen evaluation. |
+| Hybrid promotion decision | ❌ Not made | Requires EXP-014B false-positive analysis. |
 | Dashboard | ✅ Implemented | `src/pipeline/build_dashboard.py`; generated HTML remains uncommitted. |
 | Golden tests | ⚠️ Limited | Focused Gate C regression tests exist; comprehensive end-to-end coverage remains limited. |
 | Architecture decision records | ⚠️ Partial | Gate C/D decisions are recorded in the state register; standalone ADRs remain incomplete. |
 | OMOP CDM validation | ❌ Not performed | Routing is domain-safe but does not establish OMOP CDM validity. |
 | FHIR conformance validation | ❌ Not performed | Existing FHIR-shaped output is not conformance-tested. |
 | End-to-end correctness evaluation | ❌ Not performed | No validated gold-to-correct-standardized-concept metric exists. |
+| Public-release licensing audit | ❌ Not performed | Assessment vocabulary and derived dictionaries require redistribution review. |

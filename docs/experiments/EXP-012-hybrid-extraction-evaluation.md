@@ -46,11 +46,13 @@ All systems used document-level character offsets and the same gold-entity repre
 4. PubMedBERT contributed 2,505 additional true positives but also introduced substantial additional false positives.
 5. The result validates the shared document-level offset representation: dictionary-only and PubMedBERT-only metrics reproduce EXP-009 and EXP-007 exactly.
 
-## Decision
+## Status and decision
 
-Retain the word-boundary dictionary extractor as the production EXP-010 extractor.
+**Status:** Complete; evaluated candidate; not promoted.
 
-Do **not** promote the hybrid extractor yet. Although it improves F1, its precision reduction is substantial and would increase false positives entering harmonization.
+EXP-012 establishes that adding non-overlapping PubMedBERT predictions to the dictionary extractor improves recall and F1, but substantially reduces precision.
+
+The unthresholded hybrid is not promoted to the production pipeline. EXP-013 and EXP-014A evaluate confidence-based filtering, and EXP-014B must analyze the false positives introduced by the frozen hybrid before any promotion decision.
 
 ## Next evaluation options
 
