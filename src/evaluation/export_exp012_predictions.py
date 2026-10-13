@@ -9,8 +9,8 @@ import argparse
 import json
 from pathlib import Path
 import sys
-
 import torch
+import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -221,7 +221,8 @@ def transformer_records(documents, model_path):
             encoded.pop("special_tokens_mask")
 
             outputs = model(**encoded)
-            predictions = torch.argmax(outputs.logits, dim=-1)
+            probabilities = F.softmax(outputs.logits, dim=-1)
+            predictions = torch.argmax(probabilities, dim=-1)
 
             for row, passage in enumerate(batch):
                 passage_offset = passage["passage_offset"]
@@ -236,7 +237,27 @@ def transformer_records(documents, model_path):
                     id2label,
                 )
 
+                row_labels = predictions[row].tolist()
+                row_probabilities = probabilities[row].tolist()
+
                 for local_start, local_end, entity_type in local_entities:
+                    span_token_indexes = [
+                        index
+                        for index, (token_start, token_end) in enumerate(
+                            row_offsets
+                        )
+                        if token_start < token_end
+                        and token_start < local_end
+                        and token_end > local_start
+                    ]
+
+                    span_confidence = max(
+                        row_probabilities[index][
+                            int(predictions[row][index])
+                        ]
+                        for index in span_token_indexes
+                    )
+
                     records.append(
                         {
                             "document_id": passage["document_id"],
@@ -246,6 +267,7 @@ def transformer_records(documents, model_path):
                             "mention": passage["text"][
                                 local_start:local_end
                             ],
+                            "confidence": span_confidence,
                             "source": "pubmedbert",
                         }
                     )
