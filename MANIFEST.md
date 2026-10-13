@@ -163,18 +163,18 @@ Earlier documentation incorrectly labeled this as an EXP-004 result. The error i
 **Status:** Current extraction strategy used by EXP-010  
 **Strategy:** Dictionary word-boundary matching  
 **Gold denominator:** 9,956 gold entities  
-**Extracted occurrences:** 6,338  
-**Unique mentions:** 5,616  
+**Predicted entities:** 6,338  
+**Exact matches / true positives:** 5,616  
+**False positives:** 722  
+**False negatives:** 4,340  
 
 | Metric | Value |
 |---|---:|
 | Precision | 0.8861 |
 | Recall | 0.5641 |
 | F1 | 0.6893 |
-| True positives | 8,821 |
 
-The precise interpretation of occurrence and unique-mention counts must follow the original EXP-009 experiment record.
-
+Word-boundary matching removed 700 substring false positives and lost one true positive relative to substring matching.
 ---
 
 ### Alternative extractor: EXP-007 PubMedBERT
@@ -185,10 +185,10 @@ The precise interpretation of occurrence and unique-mention counts must follow t
 **Gold denominator:** 9,956 gold entities  
 **Predicted entities:** 13,316  
 
-| Extractor | Precision | Recall | F1 |
-|---|---:|---:|---:|
-| EXP-009 word-boundary dictionary | 0.8861 | 0.5641 | 0.6893 |
-| PubMedBERT epoch 3 | 0.5475 | 0.7322 | 0.6265 |
+| Extractor | Predicted | True positives | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|---:|
+| EXP-009 word-boundary dictionary | 6,338 | 5,616 | 0.8861 | 0.5641 | 0.6893 |
+| PubMedBERT epoch 3 | 13,316 | 7,290 | 0.5475 | 0.7322 | 0.6265 |
 
 PubMedBERT improved recall but reduced precision. The dictionary word-boundary extractor remains the production extractor because it is deterministic, auditable, and better aligned with controlled-vocabulary mapping.
 

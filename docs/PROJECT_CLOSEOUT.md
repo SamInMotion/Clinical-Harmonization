@@ -66,20 +66,20 @@ EXP-009 compared lexical strategies. Its word-boundary strategy is used by the a
 | Metric | Result |
 |---|---:|
 | Gold entities | 9,956 |
-| Extracted occurrences | 6,338 |
-| Unique mentions | 5,616 |
-| True positives | 8,821 |
+| Predicted entities | 6,338 |
+| Exact matches / true positives | 5,616 |
+| False positives | 722 |
+| False negatives | 4,340 |
 | Precision | 0.8861 |
 | Recall | 0.5641 |
 | F1 | 0.6893 |
 
 ### EXP-007: PubMedBERT alternative
 
-| Extractor | Precision | Recall | F1 |
-|---|---:|---:|---:|
-| EXP-009 word-boundary dictionary | 0.8861 | 0.5641 | 0.6893 |
-| PubMedBERT epoch 3 | 0.5475 | 0.7322 | 0.6265 |
-
+| Extractor | Predicted | True positives | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|---:|
+| EXP-009 word-boundary dictionary | 6,338 | 5,616 | 0.8861 | 0.5641 | 0.6893 |
+| PubMedBERT epoch 3 | 13,316 | 7,290 | 0.5475 | 0.7322 | 0.6265 |
 PubMedBERT improved recall but reduced precision. The dictionary word-boundary extractor remains the production extractor because it is deterministic, auditable, and aligned with controlled-vocabulary mapping.
 
 ### Abbreviation expansion: negative result

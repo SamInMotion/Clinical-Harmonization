@@ -343,11 +343,13 @@ load_bc5cdr()
 - **Recall:** 0.5641
 - **Status:** CURRENT extraction strategy used by EXP-010
 - **Gold denominator:** 9,956 gold entities
-- **Extracted occurrences:** 6,338
-- **Unique mentions:** 5,616
-- **True positives:** 8,821
+- **Predicted entities:** 6,338
+- **Exact matches / true positives:** 5,616
+- **False positives:** 722
+- **False negatives:** 4,340
 - **Evidence:** `docs/experiments/EXP-009-lexical-strategy-upgrade.md`
 - **Attribution correction:** Previously misattributed to EXP-004. EXP-004 was the PubMedBERT tiny-overfit preflight.
+- **Count correction:** Earlier documentation incorrectly reported 11,476 predictions and 8,821 true positives. The verified EXP-009 record reports 6,338 predictions and 5,616 exact matches.
 
 ### R-009: EXP-007 PubMedBERT epoch-3 evaluation
 
@@ -488,3 +490,15 @@ Abbreviation expansion increased recall slightly but substantially reduced preci
 | F1 | 0.6812 | 0.6583 | -0.0229 |
 
 The expanded dictionary is retained as an evaluated negative result, not as the production extractor.
+
+
+| Metric             | Value  |
+| ------------------ | ------ |
+| Gold entities      | 9,956  |
+| Predicted entities | 6,338  |
+| Exact matches / TP | 5,616  |
+| False positives    | 722    |
+| False negatives    | 4,340  |
+| Precision          | 0.8861 |
+| Recall             | 0.5641 |
+| F1                 | 0.6893 |

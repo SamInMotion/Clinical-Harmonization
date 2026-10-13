@@ -81,14 +81,17 @@ EXP-009 evaluated lexical matching strategies for dictionary extraction. Its wor
 | Metric | Result |
 |---|---:|
 | Gold entities | 9,956 |
-| Extracted occurrences | 6,338 |
-| Unique mentions | 5,616 |
-| True positives | 8,821 |
+| Predicted entities | 6,338 |
+| Exact matches / true positives | 5,616 |
+| False positives | 722 |
+| False negatives | 4,340 |
 | Precision | 0.8861 |
 | Recall | 0.5641 |
 | F1 | 0.6893 |
 
-**Correction:** an earlier version of this documentation incorrectly attributed these metrics to EXP-004. EXP-004 was the PubMedBERT tiny-overfit preflight, not a dictionary extraction evaluation. The metrics belong to EXP-009’s word-boundary strategy.
+Word-boundary matching removed 700 substring false positives and lost one true positive relative to substring matching. It improved precision by 8.8 percentage points and F1 by 2.8 percentage points.
+
+**Correction:** an earlier version of this documentation incorrectly attributed these metrics to EXP-004 and reported incorrect prediction and true-positive counts. EXP-004 was the PubMedBERT tiny-overfit preflight. The verified EXP-009 result is 6,338 predictions and 5,616 exact matches.
 
 ### Verified base-dictionary baseline: EXP-008
 
