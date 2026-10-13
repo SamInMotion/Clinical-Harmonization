@@ -184,6 +184,52 @@ load_bc5cdr()
 - **Reason:** Raw count ratio; does not join FHIR output to gold mentions or verify standardized-concept correctness.
 - **Action:** Replace with per-mention join and explicit gold-to-correct-standardized-concept evaluation before making any end-to-end accuracy claim.
 
+
+### R-007: EXP-004 current dictionary extraction
+
+- **Value:** F1 0.6893
+- **Precision:** 0.8861
+- **Recall:** 0.5641
+- **Status:** CURRENT for the active EXP-010 extractor
+- **Date:** 2026-10-12
+- **Gold denominator:** 9,956 EXP-004 gold entities
+- **Predicted entities:** 11,476
+- **True positives:** 8,821
+- **Evidence:** EXP-004 evaluation output
+- **Relationship to R-006:** Not directly comparable without reconciling extractor configuration and gold-denominator policy. R-006 remains the Gate C-2 historical baseline.
+
+### R-008: EXP-005 PubMedBERT alternative extraction
+
+- **Value:** F1 0.6265
+- **Precision:** 0.5475
+- **Recall:** 0.7322
+- **Status:** COMPLETE for epoch-3 checkpoint
+- **Interpretation:** Higher recall, lower precision than the active dictionary extractor.
+- **Action:** Do not describe as production extractor without further precision, calibration, and integration evaluation.
+
+### R-009: EXP-010 harmonization and routing
+
+- **Extracted occurrences:** 6,338
+- **Mapped:** 651
+- **Unmapped:** 5,687
+- **Vocabulary coverage:** 10.3%
+- **drug_exposure:** 371
+- **condition_occurrence:** 280
+- **Not routed:** 5,687
+- **Status:** CURRENT
+- **Scope limitation:** Coverage reflects the intentionally incomplete 29-concept vocabulary, not extractor failure.
+
+### R-010: EXP-011 mapping quality
+
+- **Mapped records:** 651
+- **Gold-supported mappings:** 629
+- **Unsupported mappings:** 22
+- **Mapping precision:** 0.9662
+- **Vocabulary-representable gold entities:** 647
+- **Vocabulary-representable mapped entities:** 629
+- **Vocabulary recall:** 0.9722
+- **Status:** CURRENT
+- **Evidence:** `output/evaluation/exp011_mapping_quality.json`
 ---
 
 ## 7. Documentation reconciliation
@@ -268,7 +314,7 @@ load_bc5cdr()
 3. Decide the committed status of `src/evaluation/dashboard.py`; it remains untracked.
 4. Treat transformer work as blocked until model access, tokenizer alignment, and training prerequisites are separately verified.
 5. Do not make semantic linking, OMOP-validity, FHIR-conformance, or end-to-end correctness claims without new per-mention evaluation evidence.
-
+6. Reconcile the EXP-004 gold denominator of 9,956 with the Gate C-2 location-level denominator of 9,965. Document whether the difference arises from deduplication, invalid-span filtering, or a different gold-construction policy before comparing R-006 and R-007.
 ### Blocked / out of scope
 
 - `evaluate_transformer.py`: broken imports and incompatible `doc.all_entities` interface; remains blocked.
