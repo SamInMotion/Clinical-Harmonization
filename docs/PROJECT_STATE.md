@@ -395,6 +395,18 @@ load_bc5cdr()
 - **Status:** CURRENT
 - **Evidence:** `output/evaluation/exp011_mapping_quality.json`
 
+### R-013: EXP-012 hybrid extraction
+
+- **Dictionary baseline:** EXP-009 word-boundary dictionary
+- **Transformer alternative:** EXP-007 PubMedBERT epoch 3
+- **Hybrid rule:** Retain dictionary predictions; add non-overlapping same-type PubMedBERT predictions
+- **Hybrid precision:** 0.6328
+- **Hybrid recall:** 0.8157
+- **Hybrid F1:** 0.7127
+- **Status:** EVALUATED CANDIDATE; NOT PROMOTED
+- **Finding:** F1 improved by 0.0516 over the dictionary baseline, but precision fell from 0.8861 to 0.6328.
+- **Action:** Retain word-boundary dictionary as production extractor pending precision-oriented hybrid variants.
+
 ---
 
 ## Documentation reconciliation
@@ -417,6 +429,7 @@ load_bc5cdr()
 4. Build EXP-012 from the base dictionary and PubMedBERT epoch-3 checkpoint; do not use the unverified former EXP-004 attribution as a baseline.
 5. Regenerate or export predictions under a single document-level offset convention before hybrid evaluation.
 6. Do not make semantic linking, OMOP-validity, FHIR-conformance, or end-to-end correctness claims without new per-mention evaluation evidence.
+7. Investigate the approximately 3,291 false positives added by EXP-012 before considering any hybrid extractor promotion.
 
 ## 9. Next gated actions
 
