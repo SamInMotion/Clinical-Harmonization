@@ -231,18 +231,53 @@ load_bc5cdr()
 - **Status:** CURRENT
 - **Evidence:** `output/evaluation/exp011_mapping_quality.json`
 
+### R-011: EXP-010 harmonization and routing
+
+- **Extracted occurrences:** 6,338
+- **Mapped:** 651
+- **Unmapped:** 5,687
+- **Vocabulary coverage:** 10.3%
+- **`drug_exposure`:** 371
+- **`condition_occurrence`:** 280
+- **Not routed:** 5,687
+- **Status:** CURRENT
+- **Scope limitation:** Coverage reflects the intentionally incomplete 29-concept vocabulary.
+
+### R-012: EXP-011 mapping quality
+
+- **Mapped records:** 651
+- **Gold-supported mappings:** 629
+- **Unsupported mappings:** 22
+- **Mapping precision:** 0.9662
+- **Vocabulary-representable gold entities:** 647
+- **Vocabulary-representable mapped entities:** 629
+- **Vocabulary recall:** 0.9722
+- **Status:** CURRENT
+- **Evidence:** `output/evaluation/exp011_mapping_quality.json`
+
+### R-013: EXP-012 hybrid extraction
+
+- **Dictionary baseline:** EXP-009 word-boundary dictionary
+- **Transformer alternative:** EXP-007 PubMedBERT epoch 3
+- **Hybrid rule:** Retain dictionary predictions; add non-overlapping same-type PubMedBERT predictions
+- **Hybrid precision:** 0.6328
+- **Hybrid recall:** 0.8157
+- **Hybrid F1:** 0.7127
+- **Status:** EVALUATED CANDIDATE; NOT PROMOTED
+- **Finding:** F1 improved by 0.0516 over the dictionary baseline, but precision fell from 0.8861 to 0.6328.
+- **Action:** Retain word-boundary dictionary as production extractor pending precision-oriented hybrid variants.
+
 ### R-014: EXP-013 confidence-thresholded hybrid
 
 - **Dictionary baseline:** EXP-008 base dictionary
 - **Transformer:** EXP-007 PubMedBERT epoch 3
 - **Rule:** Add non-overlapping, same-type PubMedBERT predictions above a confidence threshold
-- **Best evaluated threshold:** 0.95
-- **Hybrid precision:** 0.7609
-- **Hybrid recall:** 0.7719
-- **Hybrid F1:** 0.7664
-- **Baseline F1:** 0.6611
-- **Status:** PROMISING CANDIDATE; OPERATING THRESHOLD NOT SELECTED
-- **Next:** Extend sweep to 0.97, 0.98, and 0.99; analyze residual false positives.
+- **F1-optimal threshold:** 0.95
+- **F1-optimal result:** Precision 0.7609; recall 0.7719; F1 0.7664
+- **Precision-preserving threshold:** 0.97
+- **Precision-preserving result:** Precision 0.7880; recall 0.7397; F1 0.7631
+- **Status:** EVALUATED CANDIDATES; NOT PROMOTED
+- **Decision:** Require EXP-014 false-positive analysis before production promotion.
 ---
 
 ## 7. Documentation reconciliation
@@ -420,6 +455,8 @@ load_bc5cdr()
 - **Finding:** F1 improved by 0.0516 over the dictionary baseline, but precision fell from 0.8861 to 0.6328.
 - **Action:** Retain word-boundary dictionary as production extractor pending precision-oriented hybrid variants.
 
+
+
 ---
 
 ## Documentation reconciliation
@@ -443,6 +480,7 @@ load_bc5cdr()
 5. Regenerate or export predictions under a single document-level offset convention before hybrid evaluation.
 6. Do not make semantic linking, OMOP-validity, FHIR-conformance, or end-to-end correctness claims without new per-mention evaluation evidence.
 7. Investigate the approximately 3,291 false positives added by EXP-012 before considering any hybrid extractor promotion.
+8. Run EXP-014 to characterize false positives introduced by the 0.95 and 0.97 hybrid candidates before selecting a production extractor.
 
 ## 9. Next gated actions
 
