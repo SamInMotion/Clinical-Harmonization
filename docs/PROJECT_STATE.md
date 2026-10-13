@@ -2,9 +2,9 @@
 
 **Purpose:** Canonical current-state register for this repository. Read this before making changes. Update the relevant sections at every session closeout.
 
-**Last updated:** 2026-10-10  
+**Last updated:** 2026-10-13  
 **Maintainer:** Samuel Okoe-Mensah  
-**Status:** Active prototype; not a validated clinical system
+**Status:** Active research prototype; not a validated clinical system  
 
 ---
 
@@ -12,16 +12,18 @@
 
 | Item | Current verified state | Last verified |
 |---|---|---|
-| Repository | `clinical-harmonization` | 2026-10-10 |
-| Branch | `master` | 2026-10-10 |
-| HEAD | `d4bf54c` — `fix: label every BioC annotation location for transformer NER` | 2026-10-10 |
-| Checkpoint anchor | `b27abb2` — `docs: add clinical harmonization session checkpoint` | 2026-10-10 |
-| Working tree | Clean except untracked `src/evaluation/dashboard.py`; Gate C-1 through C-3 completed | 2026-10-10 |
-| Dashboard | Untracked; not part of committed project state | 2026-10-10 |
-| Active Python | Global Python 3.14.4 (`C:\Users\samue.KITAB\AppData\Local\Programs\Python\Python314\python.exe`) | 2026-10-10 |
-| Project virtual environment | `.venv/` exists and was created with Python 3.14.4 | 2026-10-10 |
-| Active interpreter caveat | Shell `python` resolves to global Python, not necessarily `.venv\Scripts\python.exe` | 2026-10-10 |
-| Test suite | `tests/golden/test_ner.py` contains placeholder tests only; no executable NER regression coverage | 2026-10-10 |
+| Repository | `clinical-harmonization` | 2026-10-13 |
+| Branch | `master` | 2026-10-13 |
+| Remote | `https://github.com/SamInMotion/Clinical-Harmonization.git` | 2026-10-13 |
+| HEAD | `2c5ddd6` — `feat: export PubMedBERT span confidence for EXP-013` | 2026-10-13 |
+| Working tree | Clean | 2026-10-13 |
+| Active Python | Use `.venv/Scripts/python.exe` explicitly | 2026-10-13 |
+| Project virtual environment | `.venv/` exists | 2026-10-13 |
+| Active extraction strategy | EXP-009 word-boundary dictionary | 2026-10-13 |
+| Active harmonization pipeline | EXP-010 | 2026-10-13 |
+| Authoritative hybrid evaluation | EXP-014A frozen 0.95-confidence hybrid | 2026-10-13 |
+| Hybrid promotion decision | Not made; requires EXP-014B | 2026-10-13 |
+| Test suite | Limited focused regression coverage; no comprehensive end-to-end suite | 2026-10-13 |
 
 **Environment rule:** Use `.venv/Scripts/python.exe` explicitly until shell activation is verified. Do not assume `python` refers to the project virtual environment.
 
@@ -29,298 +31,178 @@
 
 ## 2. Project scope
 
-The project investigates whether biomedical text can be transformed reliably into standardized clinical representations and where errors enter the pipeline.
+The project investigates whether biomedical text can be transformed reliably into standardized clinical representations and where errors enter that transformation.
 
-Intended stages:
+Implemented stages:
 
 1. Chemical/disease mention extraction.
-2. Terminology linking.
-3. OMOP-oriented routing/representation.
-4. FHIR-shaped serialization.
-5. Stage-wise and end-to-end evaluation with explicit denominators.
+2. Controlled-vocabulary mapping.
+3. Domain-safe OMOP-style routing.
+4. Unmapped-mention preservation and abstention.
+5. Static reporting.
 
 Primary corpus: BC5CDR BioC XML at `data/raw/bc5cdr/CDR_Data/CDR.Corpus.v010516/`.
 
-This is a prototype. Current hard-coded terminology, conversion logic, and pass-through counts do not establish clinical correctness, OMOP CDM validity, FHIR conformance, or end-to-end semantic accuracy.
+This is a prototype. Current terminology, mapping logic, routing logic, and pass-through counts do not establish clinical correctness, OMOP CDM validity, FHIR conformance, or end-to-end semantic accuracy.
 
 ---
 
-## 3. Verified component state
-
-| Component | Path | Current state | Gate C impact |
-|---|---|---|---|
-| BioC loader | `src/ner/load_bc5cdr.py` | Reads only the first `<location>` per annotation | Must preserve all locations |
-| Dictionary NER | `src/ner/dictionary_baseline.py` | Extracts predictions from passage text; does not consume gold annotations | No functional change required |
-| NER evaluator | `src/ner/evaluate_ner.py` | Builds one gold entity per annotation; uses full annotation-text length; excludes entity type from match key | Must use location-level gold spans and type-aware matching |
-| Debug utility | `src/ner/debug_errors.py` | Displays annotation metadata; not evaluation-critical | No change required |
-| scispaCy evaluator | `src/ner/scispacy_ner.py` | Duplicates flawed gold construction and type-blind matching | Must be updated consistently |
-| Transformer NER | `src/ner/transformer_ner.py` | Builds BIO labels from annotation-level offset/length; uses only first location implicitly | Must label every location |
-| Transformer evaluator | `src/ner/evaluate_transformer.py` | Broken/stale: imports nonexistent symbols from `evaluate_ner`; expects `doc.all_entities` | Do not modify in Gate C; record as blocked |
-| Entity linking | `src/linking/entity_linking.py` | Re-extracts predicted mentions from passage text; does not consume gold annotations | No functional change required |
-| OMOP routing | `src/mapping/omop_routing.py` | Routes prediction-derived linked entities by mention type | No functional change required |
-| FHIR transformation | `src/mapping/fhir_transform.py` | Transforms OMOP records derived from predictions | No functional change required |
-| Error decomposition | `src/evaluation/error_decomposition.py` | Duplicates evaluator gold construction and type-blind matching | Must use location-level gold spans and type-aware matching |
-| Dashboard | `src/evaluation/dashboard.py` | Untracked; reads `output/evaluation/error_decomposition.json` | Do not treat as committed project state |
-
----
-
-## 4. Dependency map
+## 3. Current architecture
 
 ```text
-load_bc5cdr()
-├── dictionary_baseline.py
-│   └── builds terminology dictionary from annotation text/type/mesh_id
-├── evaluate_ner.py
-│   └── builds gold entities and exact-span metrics  [GATE C: UPDATE]
-├── debug_errors.py
-│   └── displays annotations; non-evaluation-critical
-├── scispacy_ner.py
-│   └── builds gold entities and exact-span metrics  [GATE C: UPDATE]
-├── transformer_ner.py
-│   └── builds BIO labels from annotation spans       [GATE C: UPDATE]
-├── evaluate_transformer.py
-│   └── broken/stale; imports nonexistent evaluator symbols [BLOCKED]
-├── entity_linking.py
-│   └── extracts predictions from passage text; no gold-annotation dependency
-├── omop_routing.py
-│   └── routes prediction-derived linked entities
-├── fhir_transform.py
-│   └── transforms OMOP records derived from predictions
-└── error_decomposition.py
-    └── builds gold entities and extraction metrics   [GATE C: UPDATE]
+BC5CDR BioC XML
+      |
+      v
+Dictionary word-boundary extractor
+      |
+      v
+Harmonized occurrence records
+      |
+      +--> Controlled vocabulary mapping
+      |
+      +--> Domain-safe OMOP-style routing
+      |
+      +--> Unmapped mention preservation
+      |
+      v
+Static HTML dashboard
 ```
 
-**Compatibility rule:** Preserve existing annotation-level fields (`text`, `type`, `mesh_id`, first-location `offset`, `local_offset`, `length`) while adding a complete `locations` list. This minimizes breakage in display/debug code while enabling location-level evaluation.
+The active vocabulary contains 29 concepts: 17 drugs and 12 conditions. It is deliberately incomplete.
+
+Routing policy:
+
+| OMOP-style domain | Destination |
+|---|---|
+| Drug | `drug_exposure` |
+| Condition | `condition_occurrence` |
+| Observation | Not routed |
+
+Unmapped mentions are preserved rather than force-mapped.
 
 ---
 
-## 5. BioC location audit
+## 4. Current verified results
 
-**Audit date:** 2026-10-10  
-**Scope:** All 1,500 documents; 29,271 annotations; 29,424 `<location>` elements across training, development, and test splits.
+### Extraction
 
-| Split | Documents | Annotations | Locations | Two-location annotations | Exact full-text location matches | Valid multi-location fragments | Genuine anomalies | Out-of-bounds |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Training | 500 | 9,570 | 9,643 | 73 | 9,496 | 146 | 1 | 0 |
-| Development | 500 | 9,773 | 9,816 | 43 | 9,730 | 85 | 1 | 0 |
-| Test | 500 | 9,928 | 9,965 | 37 | 9,891 | 74 | 0 | 0 |
-| **Total** | **1,500** | **29,271** | **29,424** | **153** | **29,117** | **305** | **2** | **0** |
+| Experiment | System | Split | Predicted | TP | Precision | Recall | F1 | Status |
+|---|---|---|---:|---:|---:|---:|---:|---|
+| EXP-008 | Base dictionary | Test | 7,038 | 5,617 | 0.7981 | 0.5642 | 0.6611 | Verified baseline |
+| EXP-009 | Word-boundary dictionary | Test | 6,338 | 5,616 | 0.8861 | 0.5641 | 0.6893 | Current production extractor |
+| EXP-007 | PubMedBERT epoch 3 | Test | 13,316 | 7,290 | 0.5475 | 0.7322 | 0.6265 | Evaluated alternative |
 
-### Established findings
+All extraction evaluations use location-level, type-aware exact-span matching.
 
-- Every multi-location annotation has exactly two locations.
-- The current loader reads only the first location, losing 153 valid gold spans corpus-wide.
-- Passage-local conversion (`document_offset - passage_offset`) produced zero out-of-bounds locations.
-- The earlier 307 “mismatches” were mostly expected fragment behavior: 305 valid fragments plus two genuine anomalies.
-- Do not compare an individual location slice with the entire annotation text for multi-location annotations.
+### Abbreviation expansion
 
-### Corpus exceptions
+Abbreviation expansion was evaluated on the BC5CDR development set and was a negative result.
 
-| ID | Split / document | Issue | Policy |
-|---|---|---|---|
-| CE-001 | Training / `15863244` | Annotation `midline (MD) defects`; location slice is `d midline (MD) defec`, indicating a source offset/length irregularity | Retain as-is; count and document; do not silently alter source XML |
-| CE-002 | Development / `6415512` | Annotation `atypical absence seizures`; first location slice is ` atypical absenc`; annotation text is not contiguous in passage | Retain as-is; count and document; do not silently alter source XML |
+| Dictionary | Precision | Recall | F1 |
+|---|---:|---:|---:|
+| Base dictionary | 0.8158 | 0.5847 | 0.6812 |
+| Abbreviation-expanded | 0.7390 | 0.5934 | 0.6583 |
+
+Expansion added 846 predictions, gained 86 true positives, and introduced 760 false positives. It is retained as provenance and is not used in production.
+
+### Harmonization
+
+| Measure | Result |
+|---|---:|
+| Extracted occurrences | 6,338 |
+| Mapped occurrences | 651 |
+| Unmapped occurrences | 5,687 |
+| Mapping rate over extracted occurrences | 10.3% |
+| Routed to `drug_exposure` | 371 |
+| Routed to `condition_occurrence` | 280 |
+| Not routed | 5,687 |
+
+The 10.3% figure is a mapping rate over extracted occurrences. It is not vocabulary coverage, mapping precision, or end-to-end correctness.
+
+### Mapping quality
+
+| Measure | Result |
+|---|---:|
+| Mapped records | 651 |
+| Gold-supported mappings | 629 |
+| Unsupported mappings | 22 |
+| Mapping precision | 0.9662 |
+| Vocabulary-representable gold entities | 647 |
+| Vocabulary-representable mapped entities | 629 |
+| Vocabulary recall | 0.9722 |
+
+A gold-supported mapping means that the mapped record matches a gold entity’s document-level span and type, and its mapped concept matches the normalized gold mention or a controlled variant. This does not establish semantic equivalence to an OMOP concept.
+
+---
+
+## 5. Hybrid extraction status
+
+### EXP-012: unthresholded hybrid
+
+**Status:** Complete.
+
+| System | Predicted | TP | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|---:|
+| Base dictionary | 7,038 | 5,617 | 0.7981 | 0.5642 | 0.6611 |
+| PubMedBERT only | 13,316 | 7,290 | 0.5475 | 0.7322 | 0.6265 |
+| Hybrid union | 12,834 | 8,121 | 0.6328 | 0.8157 | 0.7127 |
+
+The unthresholded hybrid improved F1 by 0.0516 over the dictionary baseline but reduced precision from 0.7981 to 0.6328.
+
+### EXP-013: exploratory test-set threshold sweep
+
+**Status:** Complete; exploratory test-set model selection.
+
+EXP-013 assigned each PubMedBERT prediction a confidence score:
+
+> the maximum softmax probability assigned to the predicted class among tokens overlapping the predicted entity span.
+
+It then swept thresholds directly on the BC5CDR test set. Because the threshold was selected by comparing F1 across test-set thresholds, its optimum is optimistically biased.
+
+| Threshold | PubMedBERT added | Precision | Recall | F1 |
+|---:|---:|---:|---:|---:|
+| Dictionary baseline | — | 0.7981 | 0.5642 | 0.6611 |
+| 0.90 | 3,876 | 0.7227 | 0.7923 | 0.7559 |
+| 0.95 | 3,062 | 0.7609 | 0.7719 | 0.7664 |
+| 0.97 | 2,307 | 0.7880 | 0.7397 | 0.7631 |
+| 0.98 | 1,756 | 0.8044 | 0.7105 | 0.7546 |
+| 0.99 | 945 | 0.8072 | 0.6472 | 0.7184 |
+
+EXP-013 is retained as exploratory provenance. Its 0.95 and 0.97 results must not be presented as independently selected operating points.
+
+### EXP-014A: authoritative frozen hybrid evaluation
+
+**Status:** Complete; authoritative hybrid evaluation.
+
+Protocol:
+
+1. Export development-set gold, dictionary, and PubMedBERT predictions.
+2. Sweep confidence thresholds using development data only.
+3. Select the threshold with maximum development F1; break ties by higher precision.
+4. Freeze the selected threshold.
+5. Evaluate the frozen configuration once on the untouched BC5CDR test set.
+
+Development-set selection:
+
+| Threshold | PubMedBERT added | Precision | Recall | F1 |
+|---:|---:|---:|---:|---:|
+| **0.95** | **2,869** | **0.7660** | **0.7733** | **0.7696** |
+
+Frozen test evaluation:
+
+| System | Predicted | TP | FP | FN | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Dictionary | 7,038 | 5,617 | 1,421 | 4,339 | 0.7981 | 0.5642 | 0.6611 |
+| PubMedBERT epoch 3 | 13,316 | 7,290 | 6,026 | 2,666 | 0.5475 | 0.7322 | 0.6265 |
+| Frozen hybrid, threshold 0.95 | 10,100 | 7,685 | 2,415 | 2,271 | 0.7609 | 0.7719 | 0.7664 |
+
+The frozen hybrid improves recall from 0.5642 to 0.7719 relative to the dictionary while reducing precision from 0.7981 to 0.7609. It improves F1 from 0.6611 to 0.7664.
+
+The hybrid is **not promoted** to the production pipeline. EXP-014B must analyze its false positives before a promote, modify, or reject decision.
 
 ---
 
 ## 6. Result register
-
-### R-001: Historical dictionary NER F1
-
-- **Value:** 0.0966
-- **Status:** INVALID
-- **Reason:** Compared document-global gold offsets with passage-local predicted offsets.
-- **Correction provenance:** Corrected in commit `91dcc63`; recorded in `MANIFEST.md`.
-- **Action:** Do not cite as project performance.
-
-### R-002: Provisional dictionary NER F1
-
-- **Value:** 0.6614
-- **Precision:** 0.7970
-- **Recall:** 0.5653
-- **Status:** SUPERSEDED by R-006; retained as historical one-location-representation result
-- **Dataset:** BC5CDR test set; 500 documents
-- **Denominator:** 9,928 gold annotation records under one-location representation
-- **Matching:** Exact span; document, passage type, offset, and length; entity type excluded
-- **Known limitation:** Uses first BioC location only; multi-location annotations are misrepresented
-- **Action:** Rerun after location-level gold spans and type-aware matching. Preserve this value as historical provenance.
-
-### R-006: Gate C-2 dictionary NER F1
-
-- **Value:** 0.6611
-- **Precision:** 0.7981
-- **Recall:** 0.5642
-- **Status:** CURRENT under Gate C-2 policy
-- **Date:** 2026-10-10
-- **Dataset:** BC5CDR test set; 500 documents
-- **Gold denominator:** 9,965 location-level gold spans
-- **Predicted entities:** 7,038
-- **Matching:** Exact match on document ID, passage type, passage-local offset, location length, and entity type
-- **Confusion matrix:** TP 5,617; FP 1,421; FN 4,339
-- **Chemical results:** Precision 0.8103; recall 0.5380; F1 0.6466; TP 2,904; FP 680; FN 2,494
-- **Disease results:** Precision 0.7855; recall 0.5952; F1 0.6772; TP 2,713; FP 741; FN 1,845
-- **Evidence:** `output/evaluation/evaluate_ner_gate_c2_2026-10-10.txt`
-- **Scope limitation:** Exact span matching only; no semantic correctness, terminology-linking accuracy, OMOP validity, or FHIR conformance claim
-- **Supersedes:** R-002 for current reporting
-
-### R-003: Linking coverage
-
-- **Value:** 785 linked / 7,038 predictions = 11.15%
-- **Status:** PROTOTYPE COVERAGE, NOT LINKING ACCURACY
-- **Reason:** Uses a small hard-coded terminology dictionary and exact normalized lookup.
-- **Action:** Do not describe as linking accuracy or correctness.
-
-### R-004: OMOP routing and FHIR conversion
-
-- **Values:** 785 routed / 785 linked = 100%; 785 FHIR resources / 785 OMOP records = 100%
-- **Status:** FUNCTION PASS-THROUGH COUNTS
-- **Reason:** Routing uses mention type; FHIR transformation creates JSON-like resources. Neither validates semantic correctness, OMOP CDM validity, or FHIR conformance.
-- **Action:** Do not describe as standards compliance or clinical validity.
-
-### R-005: End-to-end survival
-
-- **Value:** 785 / 9,928 = 7.9%
-- **Status:** INVALID AS A CORRECTNESS METRIC
-- **Reason:** Raw count ratio; does not join FHIR output to gold mentions or verify standardized-concept correctness.
-- **Action:** Replace with per-mention join and explicit gold-to-correct-standardized-concept evaluation before making any end-to-end accuracy claim.
-
-
-### R-007: EXP-004 current dictionary extraction
-
-- **Value:** F1 0.6893
-- **Precision:** 0.8861
-- **Recall:** 0.5641
-- **Status:** CURRENT for the active EXP-010 extractor
-- **Date:** 2026-10-12
-- **Gold denominator:** 9,956 EXP-004 gold entities
-- **Predicted entities:** 11,476
-- **True positives:** 8,821
-- **Evidence:** EXP-004 evaluation output
-- **Relationship to R-006:** Not directly comparable without reconciling extractor configuration and gold-denominator policy. R-006 remains the Gate C-2 historical baseline.
-
-### R-008: EXP-005 PubMedBERT alternative extraction
-
-- **Value:** F1 0.6265
-- **Precision:** 0.5475
-- **Recall:** 0.7322
-- **Status:** COMPLETE for epoch-3 checkpoint
-- **Interpretation:** Higher recall, lower precision than the active dictionary extractor.
-- **Action:** Do not describe as production extractor without further precision, calibration, and integration evaluation.
-
-### R-009: EXP-010 harmonization and routing
-
-- **Extracted occurrences:** 6,338
-- **Mapped:** 651
-- **Unmapped:** 5,687
-- **Vocabulary coverage:** 10.3%
-- **drug_exposure:** 371
-- **condition_occurrence:** 280
-- **Not routed:** 5,687
-- **Status:** CURRENT
-- **Scope limitation:** Coverage reflects the intentionally incomplete 29-concept vocabulary, not extractor failure.
-
-### R-010: EXP-011 mapping quality
-
-- **Mapped records:** 651
-- **Gold-supported mappings:** 629
-- **Unsupported mappings:** 22
-- **Mapping precision:** 0.9662
-- **Vocabulary-representable gold entities:** 647
-- **Vocabulary-representable mapped entities:** 629
-- **Vocabulary recall:** 0.9722
-- **Status:** CURRENT
-- **Evidence:** `output/evaluation/exp011_mapping_quality.json`
-
-### R-011: EXP-010 harmonization and routing
-
-- **Extracted occurrences:** 6,338
-- **Mapped:** 651
-- **Unmapped:** 5,687
-- **Vocabulary coverage:** 10.3%
-- **`drug_exposure`:** 371
-- **`condition_occurrence`:** 280
-- **Not routed:** 5,687
-- **Status:** CURRENT
-- **Scope limitation:** Coverage reflects the intentionally incomplete 29-concept vocabulary.
-
-### R-012: EXP-011 mapping quality
-
-- **Mapped records:** 651
-- **Gold-supported mappings:** 629
-- **Unsupported mappings:** 22
-- **Mapping precision:** 0.9662
-- **Vocabulary-representable gold entities:** 647
-- **Vocabulary-representable mapped entities:** 629
-- **Vocabulary recall:** 0.9722
-- **Status:** CURRENT
-- **Evidence:** `output/evaluation/exp011_mapping_quality.json`
-
-### R-013: EXP-012 hybrid extraction
-
-- **Dictionary baseline:** EXP-009 word-boundary dictionary
-- **Transformer alternative:** EXP-007 PubMedBERT epoch 3
-- **Hybrid rule:** Retain dictionary predictions; add non-overlapping same-type PubMedBERT predictions
-- **Hybrid precision:** 0.6328
-- **Hybrid recall:** 0.8157
-- **Hybrid F1:** 0.7127
-- **Status:** EVALUATED CANDIDATE; NOT PROMOTED
-- **Finding:** F1 improved by 0.0516 over the dictionary baseline, but precision fell from 0.8861 to 0.6328.
-- **Action:** Retain word-boundary dictionary as production extractor pending precision-oriented hybrid variants.
-
-### R-014: EXP-013 confidence-thresholded hybrid
-
-- **Dictionary baseline:** EXP-008 base dictionary
-- **Transformer:** EXP-007 PubMedBERT epoch 3
-- **Rule:** Add non-overlapping, same-type PubMedBERT predictions above a confidence threshold
-- **F1-optimal threshold:** 0.95
-- **F1-optimal result:** Precision 0.7609; recall 0.7719; F1 0.7664
-- **Precision-preserving threshold:** 0.97
-- **Precision-preserving result:** Precision 0.7880; recall 0.7397; F1 0.7631
-- **Status:** EVALUATED CANDIDATES; NOT PROMOTED
-- **Decision:** Require EXP-014 false-positive analysis before production promotion.
----
-
-## 7. Documentation reconciliation
-
-| Document claim | Verified reality | Required action |
-|---|---|---|
-| `MANIFEST.md`: dashboard “Not created” | `src/evaluation/dashboard.py` exists but is untracked | Reconcile only after deciding its committed status |
-| `MANIFEST.md`: OMOP routing and FHIR transformation “Not created” | Prototype scripts exist | Reconcile after verification |
-| `docs/evaluation_protocol.md`: “Survival rate” | Raw FHIR-resource/gold-entity count ratio | Rename or redefine; do not imply correctness |
-| `docs/evaluation_protocol.md`: OMOP/FHIR “None — 100%” errors | Pass-through counts, not validation | Reword; no conformance claim |
-| `docs/evaluation_protocol.md`: exact match definition | Current key excludes entity type | Update after Gate C matching policy is implemented |
-| `docs/evaluation_protocol.md`: NER results | Based on one-location gold representation | Mark provisional; replace after Gate C rerun |
-
----
-
-## 8. Approved decisions
-
-### D-001: Location-level gold representation
-
-**Approved:** 2026-10-10  
-**Decision:** Use one gold span per BioC `<location>`. Preserve annotation-level text, MeSH ID, and provenance.  
-**Scope:** NER evaluation, error decomposition, scispaCy evaluation, and transformer BIO labeling.
-
-### D-002: Type-aware exact matching
-
-**Approved:** 2026-10-10  
-**Decision:** A prediction matches gold only when document ID, passage type, passage-local offset, location length, and entity type all match.  
-**Scope:** Primary exact-span metric.
-
-### D-003: Corpus anomalies are retained
-
-**Approved:** 2026-10-10  
-**Decision:** Do not modify source BioC XML. Retain, count, and document CE-001 and CE-002.  
-**Scope:** All current and future corpus audits.
-
-### D-004: Historical results remain provenance
-
-**Approved:** 2026-10-10  
-**Decision:** Do not delete invalid or provisional historical results. Label their validity, limitation, and replacement condition.  
-**Scope:** All metric reporting and documentation.
-
----
-## Result register
 
 ### R-001: Historical dictionary NER F1
 
@@ -335,7 +217,7 @@ load_bc5cdr()
 - **Precision:** 0.7970
 - **Recall:** 0.5653
 - **Status:** SUPERSEDED
-- **Limitation:** Used first BioC location only and excluded entity type from matching.
+- **Limitation:** Used the first BioC location only and excluded entity type from matching.
 - **Action:** Retain as historical provenance.
 
 ### R-003: Linking coverage
@@ -366,7 +248,6 @@ load_bc5cdr()
 - **Date:** 2026-10-10
 - **Gold denominator:** 9,965 location-level gold spans
 - **Predicted entities:** 7,038
-- **Matching:** Exact document ID, passage type, passage-local offset, location length, and entity type
 - **Evidence:** `output/evaluation/evaluate_ner_gate_c2_2026-10-10.txt`
 
 ### R-007: EXP-008 base-dictionary test evaluation
@@ -392,12 +273,12 @@ load_bc5cdr()
 - **Status:** CURRENT extraction strategy used by EXP-010
 - **Gold denominator:** 9,956 gold entities
 - **Predicted entities:** 6,338
-- **Exact matches / true positives:** 5,616
+- **True positives:** 5,616
 - **False positives:** 722
 - **False negatives:** 4,340
 - **Evidence:** `docs/experiments/EXP-009-lexical-strategy-upgrade.md`
 - **Attribution correction:** Previously misattributed to EXP-004. EXP-004 was the PubMedBERT tiny-overfit preflight.
-- **Count correction:** Earlier documentation incorrectly reported 11,476 predictions and 8,821 true positives. The verified EXP-009 record reports 6,338 predictions and 5,616 exact matches.
+- **Count correction:** Earlier documentation incorrectly reported 11,476 predictions and 8,821 true positives. The verified EXP-009 record reports 6,338 predictions and 5,616 true positives.
 
 ### R-009: EXP-007 PubMedBERT epoch-3 evaluation
 
@@ -415,7 +296,7 @@ load_bc5cdr()
 - **Development precision:** 0.7390
 - **Development recall:** 0.5934
 - **Status:** EVALUATED NEGATIVE RESULT
-- **Comparison:** Base dictionary achieved F1 0.6812 on the same development policy.
+- **Comparison:** Base dictionary achieved F1 0.6812 under the same development policy.
 - **Interpretation:** Expansion added 846 predictions, gained 86 true positives, and introduced 760 false positives.
 - **Action:** Retain as provenance; do not use as production extractor.
 
@@ -424,12 +305,12 @@ load_bc5cdr()
 - **Extracted occurrences:** 6,338
 - **Mapped:** 651
 - **Unmapped:** 5,687
-- **Vocabulary coverage:** 10.3%
+- **Mapping rate over extracted occurrences:** 10.3%
 - **`drug_exposure`:** 371
 - **`condition_occurrence`:** 280
 - **Not routed:** 5,687
 - **Status:** CURRENT
-- **Scope limitation:** Coverage reflects the intentionally incomplete 29-concept vocabulary.
+- **Scope limitation:** The low mapping rate reflects the intentionally incomplete 29-concept vocabulary.
 
 ### R-012: EXP-011 mapping quality
 
@@ -451,118 +332,147 @@ load_bc5cdr()
 - **Hybrid precision:** 0.6328
 - **Hybrid recall:** 0.8157
 - **Hybrid F1:** 0.7127
-- **Status:** EVALUATED CANDIDATE; NOT PROMOTED
-- **Finding:** F1 improved by 0.0516 over the dictionary baseline, but precision fell from 0.8861 to 0.6328.
-- **Action:** Retain word-boundary dictionary as production extractor pending precision-oriented hybrid variants.
+- **Status:** COMPLETE; EVALUATED CANDIDATE; NOT PROMOTED
+- **Finding:** F1 improved by 0.0516 over the dictionary baseline, but precision fell from 0.7981 to 0.6328.
+- **Evidence:** `output/evaluation/exp012_hybrid_extraction.json`
 
+### R-014: EXP-013 confidence-thresholded hybrid
 
+- **Dictionary baseline:** EXP-008 base dictionary
+- **Transformer:** EXP-007 PubMedBERT epoch 3
+- **Rule:** Add non-overlapping, same-type PubMedBERT predictions above a confidence threshold
+- **F1-optimal threshold:** 0.95
+- **F1-optimal result:** P 0.7609; R 0.7719; F1 0.7664
+- **Precision-preserving threshold:** 0.97
+- **Precision-preserving result:** P 0.7880; R 0.7397; F1 0.7631
+- **Status:** COMPLETE; EXPLORATORY TEST-SET MODEL SELECTION
+- **Decision:** Do not use EXP-013 to select or promote a production operating point.
+- **Evidence:** `output/evaluation/exp013_hybrid_confidence_sweep.json`
+
+### R-015: EXP-014A development threshold selection
+
+- **Split:** BC5CDR development set
+- **Selection rule:** Maximum development F1; ties broken by higher precision
+- **Selected threshold:** 0.95
+- **Development result:** P 0.7660; R 0.7733; F1 0.7696
+- **Status:** COMPLETE; threshold frozen
+- **Evidence:** `output/evaluation/exp014a_development_threshold_sweep.json`
+
+### R-016: EXP-014A frozen test evaluation
+
+- **Split:** BC5CDR test set
+- **Frozen threshold:** 0.95
+- **Dictionary:** P 0.7981; R 0.5642; F1 0.6611
+- **PubMedBERT only:** P 0.5475; R 0.7322; F1 0.6265
+- **Frozen hybrid:** P 0.7609; R 0.7719; F1 0.7664
+- **Hybrid confusion matrix:** TP 7,685; FP 2,415; FN 2,271
+- **Status:** CURRENT AUTHORITATIVE HYBRID RESULT; NOT PROMOTED
+- **Evidence:** `output/evaluation/exp014a_frozen_test_evaluation.json`
 
 ---
 
-## Documentation reconciliation
+## 7. Approved decisions
+
+### D-001: Location-level gold representation
+
+**Approved:** 2026-10-10  
+**Decision:** Use one gold span per BioC `<location>`. Preserve annotation-level text, MeSH ID, and provenance.  
+**Scope:** NER evaluation, error decomposition, scispaCy evaluation, and transformer BIO labeling.
+
+### D-002: Type-aware exact matching
+
+**Approved:** 2026-10-10  
+**Decision:** A prediction matches gold only when document ID, character span, and entity type all match. Current export and hybrid evaluation use document-level character offsets.  
+**Scope:** Primary exact-span metric.
+
+### D-003: Corpus anomalies are retained
+
+**Approved:** 2026-10-10  
+**Decision:** Do not modify source BioC XML. Retain, count, and document CE-001 and CE-002.  
+**Scope:** All current and future corpus audits.
+
+### D-004: Historical results remain provenance
+
+**Approved:** 2026-10-10  
+**Decision:** Do not delete invalid or provisional historical results. Label their validity, limitation, and replacement condition.  
+**Scope:** All metric reporting and documentation.
+
+### D-005: Separate threshold selection from final evaluation
+
+**Approved:** 2026-10-13  
+**Decision:** Select model configurations and thresholds using development data only. Evaluate a frozen configuration once on the test set.  
+**Scope:** All future hybrid, model-selection, and operating-point experiments.
+
+### D-006: Do not promote a hybrid without false-positive analysis
+
+**Approved:** 2026-10-13  
+**Decision:** Do not promote a hybrid extractor merely because it has the highest F1. Promote only if EXP-014B shows that its added false positives are understandable, bounded, and unlikely to harm downstream harmonization quality.  
+**Scope:** EXP-014A frozen hybrid and future extractor variants.
+
+---
+
+## 8. Documentation reconciliation
 
 | Document claim | Verified reality | Required action |
 |---|---|---|
-| EXP-004 produced dictionary F1 0.6893 | EXP-004 was PubMedBERT tiny-overfit preflight | Corrected; result belongs to EXP-009 |
-| EXP-004 gold denominator was 9,956 | No EXP-004 dictionary evaluation exists | Remove attribution; use EXP-008/EXP-009 evidence |
-| Abbreviation expansion improves extraction | It reduced development F1 | Record as evaluated negative result |
-| Base dictionary F1 0.6611 | Verified by EXP-008 on 9,956 test gold entities | Current verified base-dictionary baseline |
-| Word-boundary F1 0.6893 | Verified by EXP-009 | Current extraction strategy used by EXP-010 |
+| EXP-004 produced dictionary F1 0.6893 | EXP-004 was the PubMedBERT tiny-overfit preflight | Corrected; result belongs to EXP-009 |
+| EXP-009 produced 11,476 predictions and 8,821 true positives | Verified EXP-009 result is 6,338 predictions and 5,616 true positives | Corrected |
+| EXP-010 coverage is 10.3% | 10.3% is mapping rate over extracted occurrences | Relabel; do not call it vocabulary coverage |
+| EXP-013 threshold 0.95 is a final operating point | Threshold was selected on test data | Reclassify as exploratory; use EXP-014A |
+| EXP-014A hybrid F1 0.7664 | Development-selected frozen threshold evaluated once on test set | Current authoritative hybrid result |
+| Hybrid is production-ready | No false-positive analysis or deployment validation exists | Do not promote until EXP-014B |
 
 ---
 
-## Next gated actions
+## 9. BioC location audit
 
-1. Confirm the exact column definitions and evaluation population in `docs/experiments/EXP-009-lexical-strategy-upgrade.md`.
-2. Treat EXP-008 as the verified base-dictionary test baseline.
-3. Treat EXP-009 word-boundary matching as the current extraction strategy, subject to the EXP-009 record’s stated evaluation policy.
-4. Build EXP-012 from the base dictionary and PubMedBERT epoch-3 checkpoint; do not use the unverified former EXP-004 attribution as a baseline.
-5. Regenerate or export predictions under a single document-level offset convention before hybrid evaluation.
-6. Do not make semantic linking, OMOP-validity, FHIR-conformance, or end-to-end correctness claims without new per-mention evaluation evidence.
-7. Investigate the approximately 3,291 false positives added by EXP-012 before considering any hybrid extractor promotion.
-8. Run EXP-014 to characterize false positives introduced by the 0.95 and 0.97 hybrid candidates before selecting a production extractor.
+**Audit date:** 2026-10-10  
+**Scope:** All 1,500 documents; 29,271 annotations; 29,424 `<location>` elements across training, development, and test splits.
 
-## 9. Next gated actions
+| Split | Documents | Annotations | Locations | Two-location annotations | Exact full-text location matches | Valid multi-location fragments | Genuine anomalies | Out-of-bounds |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Training | 500 | 9,570 | 9,643 | 73 | 9,496 | 146 | 1 | 0 |
+| Development | 500 | 9,773 | 9,816 | 43 | 9,730 | 85 | 1 | 0 |
+| Test | 500 | 9,928 | 9,965 | 37 | 9,891 | 74 | 0 | 0 |
+| **Total** | **1,500** | **29,271** | **29,424** | **153** | **29,117** | **305** | **2** | **0** |
 
-### Gate C-1: Preserve all BioC locations
+### Established findings
 
-**Status:** APPROVED, NOT IMPLEMENTED  
-**Scope:** `src/ner/load_bc5cdr.py` and focused tests only.  
-**Requirement:** Preserve existing annotation-level fields for backward compatibility; add a complete `locations` list containing document offset, passage-local offset, length, and observed text.  
-**Acceptance evidence:** Tests pass for single-location, two-location, offset conversion, annotation metadata, and known corpus anomalies.
+- Every multi-location annotation has exactly two locations.
+- The original loader read only the first location, losing 153 valid gold spans corpus-wide.
+- Passage-local conversion produced zero out-of-bounds locations.
+- The earlier 307 “mismatches” were mostly expected fragment behavior: 305 valid fragments plus two genuine anomalies.
+- Do not compare an individual location slice with the entire annotation text for multi-location annotations.
 
-### Gate C-2: Location-level evaluation
+### Corpus exceptions
 
-**Status:** IMPLEMENTED; tests passed; baseline rerun on 2026-10-10
-**Scope:** `evaluate_ner.py`, `error_decomposition.py`, and `scispacy_ner.py`.  
-**Requirement:** One gold entity per location; use location-specific offset/length; include entity type in match key.  
-**Acceptance evidence:** Focused tests pass; dictionary baseline is rerun; new result recorded as a correction with provenance.
+| ID | Split / document | Issue | Policy |
+|---|---|---|---|
+| CE-001 | Training / `15863244` | Annotation `midline (MD) defects`; location slice is `d midline (MD) defec`, indicating a source offset/length irregularity | Retain as-is; count and document; do not silently alter source XML |
+| CE-002 | Development / `6415512` | Annotation `atypical absence seizures`; first location slice is ` atypical absenc`; annotation text is not contiguous in passage | Retain as-is; count and document; do not silently alter source XML |
 
-### Gate C-3: Transformer location labeling
+---
 
-**Status:** IMPLEMENTED; focused BIO-label tests passed on 2026-10-10
-**Scope:** `transformer_ner.py` BIO-label construction and focused tests only.  
-**Requirement:** Iterate all annotation locations when assigning BIO labels.  
-**Acceptance evidence:** Synthetic two-location BIO test passes. This does not establish model, tokenizer-alignment, or training readiness.
+## 10. Release and provenance constraints
 
-### Gate C closeout
+Before presenting the repository as a public portfolio showcase:
 
-**Status:** COMPLETE on 2026-10-10
-**Completed:**
+1. Confirm whether `data/terminology/omop_exercise_vocabulary.json` may be redistributed.
+2. Replace assessment-supplied vocabulary with a synthetic fixture or independently sourced, appropriately licensed vocabulary if redistribution is not permitted.
+3. Document the source, license, and acquisition instructions for BC5CDR.
+4. Review BC5CDR-derived dictionaries for redistribution permissions.
+5. Review `.llm-provenance.md`, assessment-specific wording, and session notes for confidential material.
+6. Do not commit generated files under `output/`.
 
-- Gate C-1: all BioC annotation locations are preserved.
-- Gate C-2: NER evaluation, error decomposition, and scispaCy evaluation use location-level, type-aware exact matching.
-- Gate C-3: transformer BIO labeling covers every annotation location.
-- Dictionary baseline rerun under Gate C-2 policy: F1 0.6611 on 9,965 location-level gold spans.
-- Eight focused regression tests pass.
+---
 
+## 11. Next gated actions
 
-### Blocked / out of scope
-
-- `evaluate_transformer.py`: broken imports and incompatible `doc.all_entities` interface; remains blocked.
-- Transformer training, model access, tokenizer alignment, and training-run validation: separate gates.
-- Dashboard staging/committing: separate decision; remains untracked.
-
-### Current verified dictionary result: EXP-008
-
-**Status:** CURRENT verified dictionary baseline  
-**Dictionary:** `data/terminology/bc5cdr_dictionary.json`  
-**Gold entities:** 9,956  
-**Predicted entities:** 7,038  
-**Precision:** 0.7981  
-**Recall:** 0.5642  
-**F1:** 0.6611  
-**Matching:** Exact document-level character span and entity type  
-**Gold policy:** One entity per BioC annotation location
-
-### Unverified historical claim: EXP-004
-
-A previously recorded result attributed to EXP-004 reported 11,476 predictions, precision 0.8861, recall 0.5641, and F1 0.6893.
-
-This result is not currently reproducible from the retained evaluation artifacts. It does not match EXP-008, which uses the base dictionary and produces 7,038 predictions, nor the abbreviation-expanded dictionary, which produces 7,867 predictions on the development set and reduces F1.
-
-**Status:** PROVENANCE UNKNOWN; DO NOT CITE until its extractor configuration, dictionary, and evaluation run are identified or reproduced.
-
-### Abbreviation expansion: EXP-D2
-
-Abbreviation expansion increased recall slightly but substantially reduced precision and F1 on the BC5CDR development set.
-
-| Metric | Base dictionary | Expanded dictionary | Difference |
-|---|---:|---:|---:|
-| Precision | 0.8158 | 0.7390 | -0.0768 |
-| Recall | 0.5847 | 0.5934 | +0.0088 |
-| F1 | 0.6812 | 0.6583 | -0.0229 |
-
-The expanded dictionary is retained as an evaluated negative result, not as the production extractor.
-
-
-| Metric             | Value  |
-| ------------------ | ------ |
-| Gold entities      | 9,956  |
-| Predicted entities | 6,338  |
-| Exact matches / TP | 5,616  |
-| False positives    | 722    |
-| False negatives    | 4,340  |
-| Precision          | 0.8861 |
-| Recall             | 0.5641 |
-| F1                 | 0.6893 |
+1. Create the EXP-014A experiment record.
+2. Update `README.md` to make EXP-014A the authoritative hybrid result and EXP-013 exploratory.
+3. Run EXP-014B: analyze false positives introduced by the frozen 0.95 hybrid.
+4. Decide whether to promote, modify, or reject the frozen hybrid based on EXP-014B.
+5. Correct dashboard metric labels and separate mapping rate, vocabulary coverage, mapping precision, and end-to-end yield.
+6. Complete the terminology and assessment-artifact redistribution audit.
+7. Add a clean setup and one-command reproduction path.
+8. Add per-mention gold-to-standardized-concept evaluation before making end-to-end correctness claims.
