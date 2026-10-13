@@ -230,6 +230,19 @@ load_bc5cdr()
 - **Vocabulary recall:** 0.9722
 - **Status:** CURRENT
 - **Evidence:** `output/evaluation/exp011_mapping_quality.json`
+
+### R-014: EXP-013 confidence-thresholded hybrid
+
+- **Dictionary baseline:** EXP-008 base dictionary
+- **Transformer:** EXP-007 PubMedBERT epoch 3
+- **Rule:** Add non-overlapping, same-type PubMedBERT predictions above a confidence threshold
+- **Best evaluated threshold:** 0.95
+- **Hybrid precision:** 0.7609
+- **Hybrid recall:** 0.7719
+- **Hybrid F1:** 0.7664
+- **Baseline F1:** 0.6611
+- **Status:** PROMISING CANDIDATE; OPERATING THRESHOLD NOT SELECTED
+- **Next:** Extend sweep to 0.97, 0.98, and 0.99; analyze residual false positives.
 ---
 
 ## 7. Documentation reconciliation
