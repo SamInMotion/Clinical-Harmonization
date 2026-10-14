@@ -25,7 +25,8 @@
 | Hybrid promotion decision | Not made; requires EXP-014B | 2026-10-13 |
 | Test suite | Limited focused regression coverage; no comprehensive end-to-end suite | 2026-10-13 |
 | Authoritative hybrid evaluation | EXP-014C union-span reconciled hybrid | 2026-10-14 |
-
+| Authoritative hybrid evaluation | EXP-014C union-span reconciled hybrid | 2026-10-14 |
+| Hybrid promotion decision | Not promoted; boundary errors remain dominant | 2026-10-14 |
 **Environment rule:** Use `.venv/Scripts/python.exe` explicitly until shell activation is verified. Do not assume `python` refers to the project virtual environment.
 
 ---
@@ -399,6 +400,20 @@ The hybrid is **not promoted** to the production pipeline. EXP-014B must analyze
 - **Status:** COMPLETE; current best evaluated hybrid; not promoted
 - **Decision:** Run EXP-014D false-positive analysis of the union-span hybrid before any promotion decision.
 - **Evidence:** `output/evaluation/exp014c_frozen_test_span_reconciliation.json`
+
+### R-019: EXP-014D union-span false-positive analysis
+
+- **Analyzed configuration:** EXP-014C frozen union-span hybrid
+- **Split:** BC5CDR test set
+- **Total false positives:** 2,212
+- **False positives by origin:** dictionary 844; PubMedBERT-added 994; reconciled union 374
+- **Reconciled-union partial overlaps with gold:** 355
+- **Reconciled-union same-type partial overlaps:** 351
+- **Reconciled-union boundary artifacts:** 355
+- **Reconciled-union substring artifacts:** 339
+- **Status:** COMPLETE; union-span retained as current best evaluated hybrid; not promoted
+- **Decision:** Union-span reconciliation reduces total false positives and improves precision and recall, but boundary disagreement remains the dominant error class. Do not promote without downstream error-cost evidence.
+- **Evidence:** `output/evaluation/exp014d_union_span_false_positive_analysis.json`
 ---
 
 ## 7. Approved decisions
@@ -498,14 +513,10 @@ Before presenting the repository as a public portfolio showcase:
 
 ## 11. Next gated actions
 
-1. Create the EXP-014A experiment record.
-2. Update `README.md` to make EXP-014A the authoritative hybrid result and EXP-013 exploratory.
-1. Create the EXP-014B experiment record.
-2. Run EXP-014C: evaluate development-only span-reconciliation strategies for same-type overlapping dictionary and PubMedBERT predictions.
-3. Freeze the best development-selected reconciliation strategy.
-4. Evaluate the frozen reconciliation configuration once on the BC5CDR test set.
-5. Make a promote, modify, or reject decision only after the frozen test evaluation.
-5. Correct dashboard metric labels and separate mapping rate, vocabulary coverage, mapping precision, and end-to-end yield.
-6. Complete the terminology and assessment-artifact redistribution audit.
-7. Add a clean setup and one-command reproduction path.
-8. Add per-mention gold-to-standardized-concept evaluation before making end-to-end correctness claims.
+
+1. Commit EXP-014D documentation and the EXP-014B analysis script.
+2. Correct dashboard metric labels and separate mapping rate, vocabulary coverage, mapping precision, and end-to-end yield.
+3. Complete the terminology and assessment-artifact redistribution audit.
+4. Add a clean setup and one-command reproduction path.
+5. Add per-mention gold-to-standardized-concept evaluation before making end-to-end correctness claims.
+6. If extending the hybrid, investigate span-boundary modeling or downstream error-cost evaluation rather than additional confidence-threshold tuning.
