@@ -125,6 +125,15 @@ def render_html(records, document_summary, generated_at):
     tr.unmapped td {{ background: #fff7ed; }}
     .filters {{ margin: 16px 0; }}
     input, select {{ padding: 6px; margin-right: 12px; }}
+    .note {{
+      background: #fff8e6;
+      border: 1px solid #e5d9a8;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 24px 0;
+      max-width: 900px;
+    }}
+    .note p {{ margin: 8px 0; }}
   </style>
 </head>
 <body>
@@ -133,12 +142,31 @@ def render_html(records, document_summary, generated_at):
 
   <div class="metrics">
     <div class="metric"><strong>{total}</strong>Extracted occurrences</div>
-    <div class="metric"><strong>{mapped}</strong>Mapped</div>
-    <div class="metric"><strong>{unmapped}</strong>Unmapped</div>
-    <div class="metric"><strong>{mapped / total:.1%}</strong>Coverage</div>
+    <div class="metric"><strong>{mapped}</strong>Mapped occurrences</div>
+    <div class="metric"><strong>{unmapped}</strong>Unmapped occurrences</div>
+    <div class="metric"><strong>{mapped / total:.1%}</strong>Mapping rate</div>
   </div>
 
-  <h2>Destination tables</h2>
+  <div class="note">
+    <p>
+      <strong>Mapping rate</strong> is the proportion of extracted occurrences
+      assigned a concept by the deliberately incomplete 29-concept vocabulary.
+      It is not vocabulary coverage, extraction accuracy, mapping precision,
+      end-to-end correctness, OMOP CDM validity, or FHIR conformance.
+    </p>
+    <p>
+      This dashboard reports the EXP-010 dictionary-based harmonization pipeline.
+      It does not report the EXP-014C union-span reconciled hybrid, which remains
+      an evaluated research configuration and has not been promoted to production.
+    </p>
+  </div>
+
+  <h2>Routing outcomes</h2>
+  <p>
+    These counts describe routing behavior for mapped occurrences. They do not
+    establish OMOP CDM validity, clinical correctness, or readiness for
+    clinical research use.
+  </p>
   <table>
     <tr><th>Destination</th><th>Records</th></tr>
     {''.join(f'<tr><td>{table}</td><td>{count}</td></tr>' for table, count in destination_counts.items())}
@@ -176,7 +204,7 @@ def render_html(records, document_summary, generated_at):
     <thead>
       <tr>
         <th>Document</th><th>Passage</th><th>Mention</th><th>Type</th>
-        <th>Span</th><th>Status</th><th>Concept</th><th>Domain</th>
+        <th>Document span</th><th>Mapping status</th><th>Concept</th><th>Domain</th>
         <th>Destination</th><th>Mapping method</th>
       </tr>
     </thead>
