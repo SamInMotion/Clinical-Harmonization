@@ -8,6 +8,15 @@ It implements and evaluates a pipeline for biomedical entity extraction, control
 
 The central objective is to understand how extraction methods, confidence-based hybrid filtering, and vocabulary constraints affect the reliability of structured biomedical representations.
 
+## At a glance
+
+Using BC5CDR, this project compares a deterministic dictionary extractor, a fine-tuned PubMedBERT extractor, and confidence-thresholded hybrids. It then asks whether better extraction actually produces more reliable standardized clinical representations.
+
+The main finding is that improved extraction does not automatically solve harmonization. A development-selected, frozen hybrid combining dictionary predictions with high-confidence PubMedBERT predictions achieved **0.7806 precision, 0.7904 recall, and 0.7854 F1** on the BC5CDR test set—higher recall and F1 than the dictionary alone, with only a small precision reduction.
+
+However, error analysis showed that many remaining hybrid errors were span-boundary disagreements rather than entirely invented mentions. Because those errors can still produce incorrect normalized mentions or concept candidates, the hybrid is retained as an evaluated research configuration rather than promoted to production.
+
+The active harmonization pipeline maps only 10.3% of extracted occurrences because it intentionally uses a small 29-concept vocabulary. This makes mapping failures visible instead of forcing unsupported clinical concepts into OMOP-style destination tables.
 ## Research Question
 
 > How reliably can biomedical text be transformed into standardized clinical concepts and interoperable clinical data, and where do errors enter that transformation?
@@ -330,6 +339,8 @@ These measures answer different questions and should not be collapsed into a sin
 
 For experiments involving model thresholds or hybrid predictions, threshold selection is separated from final test evaluation. EXP-014A selects its threshold on development data and evaluates the frozen configuration once on test data. EXP-013, which selected a threshold using test data, is labeled exploratory.
 
+
+
 ## Installation
 
 Clone the repository and create a virtual environment:
@@ -468,6 +479,15 @@ BibTeX:
   doi = {10.1093/database/baw068}
 }
 ```
+### Reproduce the core results
+
+After placing the required BC5CDR files, trained PubMedBERT checkpoint, and local assessment vocabulary in their documented locations, run:
+
+```bash
+./scripts/reproduce_core_results.sh
+```
+
+The script checks for the required local inputs, runs the main pipeline and evaluation experiments, and regenerates the principal result and dashboard artifacts. It does not download or redistribute the BC5CDR corpus, trained model checkpoint, or assessment-supplied vocabulary.
 
 ## Scope and Limitations
 
