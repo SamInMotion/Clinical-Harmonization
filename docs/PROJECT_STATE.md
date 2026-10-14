@@ -369,6 +369,21 @@ The hybrid is **not promoted** to the production pipeline. EXP-014B must analyze
 - **Status:** CURRENT AUTHORITATIVE HYBRID RESULT; NOT PROMOTED
 - **Evidence:** `output/evaluation/exp014a_frozen_test_evaluation.json`
 
+### R-017: EXP-014B frozen hybrid false-positive analysis
+
+- **Analyzed configuration:** EXP-014A frozen 0.95-confidence hybrid
+- **Split:** BC5CDR test set
+- **Total false positives:** 2,415
+- **Dictionary-origin false positives:** 1,421
+- **Transformer-added false positives:** 994
+- **Transformer-added partial overlaps with gold:** 722
+- **Transformer-added same-type partial overlaps:** 716
+- **Transformer-added substring artifacts:** 720
+- **Transformer-added fully disjoint false positives:** 272
+- **Transformer-added false positives at confidence >= 0.99:** 118
+- **Status:** COMPLETE; frozen hybrid not promoted
+- **Decision:** The dominant transformer-added error class is same-type span-boundary disagreement. Evaluate span-reconciliation strategies in EXP-014C before any promotion decision.
+- **Evidence:** `output/evaluation/exp014b_hybrid_false_positive_analysis.json`
 ---
 
 ## 7. Approved decisions
@@ -470,8 +485,11 @@ Before presenting the repository as a public portfolio showcase:
 
 1. Create the EXP-014A experiment record.
 2. Update `README.md` to make EXP-014A the authoritative hybrid result and EXP-013 exploratory.
-3. Run EXP-014B: analyze false positives introduced by the frozen 0.95 hybrid.
-4. Decide whether to promote, modify, or reject the frozen hybrid based on EXP-014B.
+1. Create the EXP-014B experiment record.
+2. Run EXP-014C: evaluate development-only span-reconciliation strategies for same-type overlapping dictionary and PubMedBERT predictions.
+3. Freeze the best development-selected reconciliation strategy.
+4. Evaluate the frozen reconciliation configuration once on the BC5CDR test set.
+5. Make a promote, modify, or reject decision only after the frozen test evaluation.
 5. Correct dashboard metric labels and separate mapping rate, vocabulary coverage, mapping precision, and end-to-end yield.
 6. Complete the terminology and assessment-artifact redistribution audit.
 7. Add a clean setup and one-command reproduction path.
