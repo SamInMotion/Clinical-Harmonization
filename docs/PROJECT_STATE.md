@@ -24,6 +24,7 @@
 | Authoritative hybrid evaluation | EXP-014A frozen 0.95-confidence hybrid | 2026-10-13 |
 | Hybrid promotion decision | Not made; requires EXP-014B | 2026-10-13 |
 | Test suite | Limited focused regression coverage; no comprehensive end-to-end suite | 2026-10-13 |
+| Authoritative hybrid evaluation | EXP-014C union-span reconciled hybrid | 2026-10-14 |
 
 **Environment rule:** Use `.venv/Scripts/python.exe` explicitly until shell activation is verified. Do not assume `python` refers to the project virtual environment.
 
@@ -200,6 +201,7 @@ The frozen hybrid improves recall from 0.5642 to 0.7719 relative to the dictiona
 
 The hybrid is **not promoted** to the production pipeline. EXP-014B must analyze its false positives before a promote, modify, or reject decision.
 
+| Hybrid promotion decision | Not made; requires EXP-014D false-positive analysis | 2026-10-14 |
 ---
 
 ## 6. Result register
@@ -384,6 +386,19 @@ The hybrid is **not promoted** to the production pipeline. EXP-014B must analyze
 - **Status:** COMPLETE; frozen hybrid not promoted
 - **Decision:** The dominant transformer-added error class is same-type span-boundary disagreement. Evaluate span-reconciliation strategies in EXP-014C before any promotion decision.
 - **Evidence:** `output/evaluation/exp014b_hybrid_false_positive_analysis.json`
+
+### R-018: EXP-014C span reconciliation and frozen test evaluation
+
+- **Confidence threshold:** 0.95, selected by EXP-014A on development data
+- **Strategy-selection split:** BC5CDR development set
+- **Final-evaluation split:** BC5CDR test set
+- **Selected reconciliation strategy:** `union_span`
+- **Development result:** P 0.7808; R 0.7876; F1 0.7842
+- **Test result:** P 0.7806; R 0.7904; F1 0.7854
+- **Test confusion matrix:** TP 7,869; FP 2,212; FN 2,087
+- **Status:** COMPLETE; current best evaluated hybrid; not promoted
+- **Decision:** Run EXP-014D false-positive analysis of the union-span hybrid before any promotion decision.
+- **Evidence:** `output/evaluation/exp014c_frozen_test_span_reconciliation.json`
 ---
 
 ## 7. Approved decisions
