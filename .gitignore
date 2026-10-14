@@ -53,3 +53,6 @@ models/
 !data/.gitkeep
 !output/.gitkeep
 !models/.gitkeep
+
+# Assessment-supplied vocabulary; do not redistribute without permission
+data/terminology/omop_exercise_vocabulary.json
