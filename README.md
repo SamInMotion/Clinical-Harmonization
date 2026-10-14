@@ -285,7 +285,9 @@ The active EXP-010 pipeline processed 6,338 extracted occurrences using the cont
 | Unmapped occurrences | 5,687 |
 | Mapping rate among extracted occurrences | 10.3% |
 
-The mapping rate is the proportion of extracted occurrences assigned a vocabulary concept. It is **not** a measure of vocabulary coverage, extraction accuracy, or end-to-end correctness.
+The mapping rate is the proportion of extracted occurrences assigned a vocabulary concept. It is not vocabulary coverage, extraction accuracy, mapping precision, or end-to-end correctness.
+
+Earlier pipeline output labeled this quantity `vocabulary_coverage`; it is now labeled `mapping_rate_over_extracted_occurrences` to prevent confusion with EXP-011 vocabulary coverage.
 
 The relatively low mapping rate is expected to be influenced by the deliberately limited vocabulary. It should not be interpreted as evidence of extraction failure or as a general estimate of coverage for comprehensive clinical terminologies.
 
