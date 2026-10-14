@@ -25,8 +25,7 @@
 | Hybrid promotion decision | Not made; requires EXP-014B | 2026-10-13 |
 | Test suite | Limited focused regression coverage; no comprehensive end-to-end suite | 2026-10-13 |
 | Authoritative hybrid evaluation | EXP-014C union-span reconciled hybrid | 2026-10-14 |
-| Authoritative hybrid evaluation | EXP-014C union-span reconciled hybrid | 2026-10-14 |
-| Hybrid promotion decision | Not promoted; boundary errors remain dominant | 2026-10-14 |
+| Hybrid promotion decision | Not made; requires EXP-014B | 2026-10-13 |
 **Environment rule:** Use `.venv/Scripts/python.exe` explicitly until shell activation is verified. Do not assume `python` refers to the project virtual environment.
 
 ---
